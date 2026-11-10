@@ -1,4 +1,4 @@
-"""Administracao: usuarios e perfis (administrador) e grupos de pesquisa
+"""Administracao: usuarios e perfis (administrador) e listas de trabalho
 (gestor de dados e administrador)."""
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
@@ -114,7 +114,7 @@ def usuario_editar(usuario_id):
 
 
 # ---------------------------------------------------------------------------
-# Grupos de pesquisa
+# Listas de trabalho (no codigo e no banco: Grupo)
 # ---------------------------------------------------------------------------
 @bp.route("/grupos", methods=["GET", "POST"])
 @gestao_requerida
@@ -126,28 +126,28 @@ def grupos():
 
         if acao == "criar":
             if not nome:
-                flash("Informe o nome do grupo.", "erro")
+                flash("Informe o nome da lista.", "erro")
             elif Grupo.query.filter(func.lower(Grupo.nome) == nome.lower()).first():
-                flash("Já existe um grupo com esse nome.", "erro")
+                flash("Já existe uma lista com esse nome.", "erro")
             else:
                 maior = db.session.query(func.max(Grupo.ordem)).scalar() or 0
                 db.session.add(Grupo(nome=nome[:120], ordem=maior + 1))
                 db.session.commit()
-                flash(f"Grupo “{nome}” criado.", "sucesso")
+                flash(f"Lista “{nome}” criada.", "sucesso")
         elif grupo is None:
             abort(404)
         elif acao == "renomear":
             repetido = Grupo.query.filter(func.lower(Grupo.nome) == (nome or "").lower(), Grupo.id != grupo.id).first()
             if not nome or repetido:
-                flash("Nome vazio ou já usado por outro grupo.", "erro")
+                flash("Nome vazio ou já usado por outra lista.", "erro")
             else:
                 grupo.nome = nome[:120]
                 db.session.commit()
-                flash("Grupo renomeado.", "sucesso")
+                flash("Lista renomeada.", "sucesso")
         elif acao == "alternar":
             grupo.ativo = not grupo.ativo
             db.session.commit()
-            flash(f"Grupo “{grupo.nome}” {'reativado' if grupo.ativo else 'desativado'}.", "sucesso")
+            flash(f"Lista “{grupo.nome}” {'reativada' if grupo.ativo else 'desativada'}.", "sucesso")
         elif acao in ("subir", "descer"):
             lista = Grupo.ordenados(apenas_ativos=False)
             i = lista.index(grupo)

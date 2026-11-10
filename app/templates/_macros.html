@@ -57,11 +57,11 @@
     <ul class="sugestoes" id="sugestoes-empresa" role="listbox" hidden></ul>
   </div>
   {%- elif campo.tipo == 'grupos' %}
-  <div class="opcoes-grupo" role="group" aria-label="Grupos de pesquisa">
+  <div class="opcoes-grupo" role="group" aria-label="Listas de trabalho">
     {%- for g in grupos %}
-    <label class="opcao-grupo"><input type="checkbox" name="grupos" value="{{ g.id }}" {% if g.id in (v or []) %}checked{% endif %}><span>{{ g.nome }}{% if not g.ativo %} (inativo){% endif %}</span></label>
+    <label class="opcao-grupo"><input type="checkbox" name="grupos" value="{{ g.id }}" {% if g.id in (v or []) %}checked{% endif %}><span>{{ g.nome }}{% if not g.ativo %} (inativa){% endif %}</span></label>
     {%- else %}
-    <p class="campo__ajuda">Nenhum grupo cadastrado.</p>
+    <p class="campo__ajuda">Nenhuma lista cadastrada.</p>
     {%- endfor %}
   </div>
   {%- else %}

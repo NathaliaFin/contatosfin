@@ -7,7 +7,7 @@
 {% set e_pedido = modo in ('solicitar', 'incluir') %}
 
 <div class="barra-acoes">
-  <a class="link-voltar" href="{{ voltar }}">{{ icone('voltar', 'icone--p') }} {% if contato %}Voltar à ficha{% else %}Fichário{% endif %}</a>
+  <a class="link-voltar" href="{{ voltar }}">{{ icone('voltar', 'icone--p') }} {% if contato %}Voltar à ficha{% else %}Contatos{% endif %}</a>
 </div>
 
 {% if e_pedido %}
@@ -15,7 +15,7 @@
   {% if modo == 'solicitar' %}
   Altere direto nos campos o que precisa mudar. <strong>Nada muda na ficha até o gestor de dados aprovar</strong> — ele recebe o pedido por e-mail.
   {% else %}
-  Preencha o que souber: nenhum campo é obrigatório. O gestor de dados recebe o pedido por e-mail e decide se a ficha entra no fichário.
+  Preencha o que souber: nenhum campo é obrigatório. O gestor de dados recebe o pedido por e-mail e decide se o contato é incluído.
   {% endif %}
 </div>
 {% endif %}

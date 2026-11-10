@@ -107,7 +107,7 @@ def texto(chave: str, valor) -> str:
         if not valor:
             return ""
         nomes = {g.id: g.nome for g in Grupo.query.filter(Grupo.id.in_(valor)).all()}
-        return "; ".join(nomes.get(i, f"(grupo {i} removido)") for i in valor)
+        return "; ".join(nomes.get(i, f"(lista {i} removida)") for i in valor)
     return "" if valor is None else str(valor)
 
 

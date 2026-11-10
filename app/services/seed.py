@@ -1,4 +1,4 @@
-"""Carga inicial do banco: grupos de pesquisa e o administrador."""
+"""Carga inicial do banco: listas de trabalho e o administrador."""
 
 from flask import current_app
 

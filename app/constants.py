@@ -36,7 +36,7 @@ class Campo:
 SECOES = {
     "dados": "Dados do contato",
     "secretaria": "Secretaria",
-    "grupos": "Grupos de pesquisa",
+    "grupos": "Listas de trabalho",
     "observacoes": "Observações",
     "restritos": "Dados restritos",
 }
@@ -54,7 +54,7 @@ CAMPOS: tuple[Campo, ...] = (
     Campo("secretaria_email", "E-mail", "secretaria", tipo="email", tamanho=254, largura="terco"),
     Campo("secretaria_celular", "Celular", "secretaria", tipo="telefone", tamanho=40, largura="terco"),
 
-    Campo("grupos", "Grupos de pesquisa", "grupos", tipo="grupos", largura="inteira"),
+    Campo("grupos", "Listas de trabalho", "grupos", tipo="grupos", largura="inteira"),
 
     Campo("inicio_mandato", "Início do mandato / primeiro contato", "observacoes"),
     Campo("horario_trabalho", "Horário de trabalho", "observacoes", largura="quarto"),

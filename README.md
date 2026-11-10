@@ -1,6 +1,6 @@
 # Contatos — Fin
 
-Fichário institucional de contatos da Confederação Nacional das Instituições
+Cadastro institucional de contatos da Confederação Nacional das Instituições
 Financeiras, em **Python / Flask** com **MySQL** (Azure Database for MySQL).
 
 - **Servidor de produção:** SRVAPP01 `172.16.0.12` — `https://contatos.fin.org.br`
@@ -26,12 +26,12 @@ Os scripts de uso diário (publicar, testar o banco, ver o log) estão em
   O administrador promove a gestor em *Usuários*.
 - Qualquer pessoa cadastra **empresas**, a qualquer momento. “ABEL”, “abel” e
   “Abel” são a mesma empresa (busca e cadastro ignoram maiúsculas e acentos).
-- **Grupos de pesquisa** são mantidos por gestor e administrador.
+- **Listas de trabalho** são mantidas por gestor e administrador.
 
 ## Como funciona a solicitação
 
 1. O usuário abre a ficha e clica em **Solicitar alteração** (ou *Solicitar
-   exclusão*, ou *Sugerir novo contato* no fichário).
+   exclusão*, ou *Sugerir novo contato* na lista de contatos).
 2. Altera direto nos campos — inclusive a foto — e envia.
 3. Os gestores de dados recebem um e-mail. A ficha passa a mostrar o carimbo
    **ALTERAÇÃO PENDENTE**; nada muda nela ainda.
@@ -76,7 +76,7 @@ criptografia):
 | `flask testar-banco` | Testa a conexão com o banco (sem mostrar a senha) |
 | `flask db upgrade` | Cria/atualiza as tabelas |
 | `flask db migrate -m "texto"` | Gera migration depois de alterar `app/models.py` |
-| `flask seed` | Cria os grupos iniciais e o administrador do `.env` |
+| `flask seed` | Cria as listas de trabalho iniciais e o administrador do `.env` |
 | `flask criar-usuario` | Cria um usuário ou muda o perfil de um existente |
 
 (`$env:FLASK_APP="wsgi.py"` antes, no PowerShell.)
@@ -89,7 +89,7 @@ app/
   models.py           Usuario, Empresa, Grupo, Contato, Solicitacao, Historico
   services/           regras: contatos, fotos, email, sso, cripto, validacao
   routes/             auth, contatos, empresas, solicitacoes, relatorios, admin
-  templates/          telas (fichário) e e-mails
+  templates/          telas e e-mails
   static/             estilo.css, app.js, fonte Montserrat, logos Fin
 migrations/           estrutura do banco (Alembic)
 scripts/              publicar, testar banco, ver log...

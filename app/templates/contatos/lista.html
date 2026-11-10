@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icone, retrato, selos, paginacao as paginar %}
-{% block titulo %}Fichário{% endblock %}
+{% block titulo %}Contatos{% endblock %}
 {% block conteudo %}
 {% set base = {'q': filtros.q or None, 'grupo': filtros.grupo, 'empresa': filtros.empresa, 'pendentes': 1 if filtros.pendentes else None} %}
 
 <div class="cabecalho">
   <div>
-    <p class="sobretitulo">Fichário</p>
+    <p class="sobretitulo">Cadastro</p>
     <h1>Contatos</h1>
     <p class="cabecalho__apoio">
       {% if total == 0 %}Nenhuma ficha encontrada{% elif total == 1 %}1 ficha{% else %}{{ total }} fichas{% endif %}{% if filtros.letra %} · letra {{ filtros.letra }}: {{ contagem.get(filtros.letra, 0) }}{% endif %}
@@ -28,9 +28,9 @@
     <input class="campo-caixa" id="q" name="q" value="{{ filtros.q }}" placeholder="Nome, cargo, empresa, e-mail ou telefone" autofocus>
   </div>
   <div>
-    <label class="so-leitor" for="grupo">Grupo de pesquisa</label>
+    <label class="so-leitor" for="grupo">Lista de trabalho</label>
     <select class="selecao" id="grupo" name="grupo">
-      <option value="">Todos os grupos</option>
+      <option value="">Todas as listas</option>
       {% for g in grupos %}<option value="{{ g.id }}" {% if g.id == filtros.grupo %}selected{% endif %}>{{ g.nome }}</option>{% endfor %}
     </select>
   </div>
@@ -89,7 +89,7 @@
 {% else %}
 <div class="vazio">
   <h2>Nenhuma ficha por aqui</h2>
-  <p>{% if filtros.q or filtros.grupo or filtros.empresa or filtros.letra or filtros.pendentes %}Nenhum contato atende aos filtros escolhidos. Tente outra busca ou limpe os filtros.{% else %}O fichário ainda está vazio.{% endif %}</p>
+  <p>{% if filtros.q or filtros.grupo or filtros.empresa or filtros.letra or filtros.pendentes %}Nenhum contato atende aos filtros escolhidos. Tente outra busca ou limpe os filtros.{% else %}Ainda não há contatos cadastrados.{% endif %}</p>
   {% if current_user.pode_gerir %}<a class="botao" href="{{ url_for('contatos.novo') }}">{{ icone('mais') }} Cadastrar a primeira ficha</a>{% endif %}
 </div>
 {% endif %}

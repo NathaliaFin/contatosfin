@@ -22,14 +22,14 @@
       <span class="marca__sistema">Contatos</span>
     </a>
     <nav class="nav" aria-label="Principal">
-      <a class="nav__item{% if bp == 'contatos' %} nav__item--ativo{% endif %}" href="{{ url_for('contatos.lista') }}">Fichário</a>
+      <a class="nav__item{% if bp == 'contatos' %} nav__item--ativo{% endif %}" href="{{ url_for('contatos.lista') }}">Contatos</a>
       <a class="nav__item{% if bp == 'empresas' %} nav__item--ativo{% endif %}" href="{{ url_for('empresas.lista') }}">Empresas</a>
       <a class="nav__item{% if bp == 'solicitacoes' %} nav__item--ativo{% endif %}" href="{{ url_for('solicitacoes.lista') }}">
         {% if current_user.pode_gerir %}Solicitações{% if pendentes_nav %} <span class="contador" title="Aguardando aprovação">{{ pendentes_nav }}</span>{% endif %}{% else %}Minhas solicitações{% endif %}
       </a>
       {% if current_user.pode_gerir %}
       <a class="nav__item{% if bp == 'relatorios' %} nav__item--ativo{% endif %}" href="{{ url_for('relatorios.index') }}">Relatórios</a>
-      <a class="nav__item{% if request.endpoint == 'admin.grupos' %} nav__item--ativo{% endif %}" href="{{ url_for('admin.grupos') }}">Grupos</a>
+      <a class="nav__item{% if request.endpoint == 'admin.grupos' %} nav__item--ativo{% endif %}" href="{{ url_for('admin.grupos') }}">Listas</a>
       {% endif %}
       {% if current_user.is_admin %}
       <a class="nav__item{% if request.endpoint and request.endpoint.startswith('admin.usuario') %} nav__item--ativo{% endif %}" href="{{ url_for('admin.usuarios') }}">Usuários</a>

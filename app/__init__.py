@@ -189,9 +189,9 @@ def _registrar_comandos(app: Flask) -> None:
 
     @app.cli.command("seed")
     def seed():
-        """Cria os grupos de pesquisa iniciais e o administrador."""
+        """Cria as listas de trabalho iniciais e o administrador."""
         resumo = servico_seed.semear_tudo()
-        click.secho(f"Grupos novos: {resumo['grupos']} | Administrador: {resumo['admin']}", fg="green")
+        click.secho(f"Listas novas: {resumo['grupos']} | Administrador: {resumo['admin']}", fg="green")
 
     @app.cli.command("demo")
     @click.option("--remover", is_flag=True, help="Apaga tudo o que a demonstracao criou.")

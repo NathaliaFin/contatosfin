@@ -38,7 +38,7 @@
   <section class="secao secao--direita secao--cobalto">
     <h2 class="secao__aba"><em>{{ '02' if s.comentario else '01' }}</em> {% if s.tipo == 'exclusao' %}Pedido{% else %}Dados propostos{% endif %}</h2>
     {% if s.tipo == 'exclusao' %}
-    <p>O solicitante pede a <strong>exclusão</strong> desta ficha do fichário.</p>
+    <p>O solicitante pede a <strong>exclusão</strong> deste contato.</p>
     {% else %}
     {% set divergiu = namespace(algum=False) %}
     <div class="tabela-caixa">

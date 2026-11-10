@@ -89,9 +89,6 @@ body {
   line-height: 1.5;
   color: var(--texto);
   background-color: var(--fundo);
-  /* papel quadriculado discreto */
-  background-image: radial-gradient(rgba(0, 0, 160, .075) 1px, transparent 1.2px);
-  background-size: 18px 18px;
   font-feature-settings: "tnum" 0;
 }
 a { color: var(--klein); text-decoration: none; }
@@ -359,9 +356,6 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
   flex-direction: column;
   min-height: 210px;
   background-color: var(--papel);
-  /* pauta azul de cartao de arquivo */
-  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, rgba(0, 40, 230, .07) 27px 28px);
-  background-position: 0 14px;
   border: 1px solid var(--linha);
   border-top: 3px solid var(--klein);
   border-radius: 0 var(--raio) var(--raio) var(--raio);
@@ -657,11 +651,8 @@ a.selo:hover { background: var(--cor); color: #fff; text-decoration: none; }
 textarea.entrada {
   min-height: 78px;
   resize: vertical;
-  line-height: 26px;
-  padding-top: 0;
-  background-image: repeating-linear-gradient(to bottom, transparent 0 25px, rgba(0, 40, 230, .1) 25px 26px);
-  background-attachment: local;
-  border-bottom-color: transparent;
+  line-height: 1.6;
+  padding-top: 6px;
 }
 textarea.entrada:focus { background-color: rgba(0, 40, 230, .03); }
 .campo--erro .entrada { border-bottom-color: var(--erro); }
@@ -884,14 +875,6 @@ body.tela-login { background: var(--cobalto); background-image: none; }
     radial-gradient(900px 620px at 8% 0%, rgba(0, 40, 230, .9) 0%, rgba(0, 40, 230, 0) 70%),
     radial-gradient(700px 520px at 100% 100%, rgba(92, 71, 255, .35) 0%, rgba(92, 71, 255, 0) 70%),
     linear-gradient(160deg, #0000A0 0%, #00008A 55%, #000070 100%);
-}
-/* pauta fina, como papel de fichario visto de longe */
-.login::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, .045) 0 1px, transparent 1px 44px);
 }
 /* faixas retro (paleta complementar Fin) */
 .login::after {

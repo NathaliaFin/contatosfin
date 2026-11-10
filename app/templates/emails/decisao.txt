@@ -1,0 +1,8 @@
+CONTATOS FIN - SOLICITACAO Nº {{ s.id }} {{ s.rotulo_status|upper }}
+
+{{ s.rotulo_tipo }}: {{ s.contato_nome }}
+Decidida por: {{ s.decidido_por.nome }} em {{ s.decidido_em.strftime('%d/%m/%Y %H:%M') }}
+{% if s.motivo_decisao %}
+Resposta: {{ s.motivo_decisao }}
+{% endif %}
+Ver: {{ link }}

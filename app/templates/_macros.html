@@ -1,0 +1,103 @@
+{% macro icone(nome, classe='') -%}
+<svg class="icone {{ classe }}" aria-hidden="true"><use href="#i-{{ nome }}"/></svg>
+{%- endmacro %}
+
+{% macro retrato(contato, tamanho='grande', src=None) -%}
+{%- set url = src or (url_for('contatos.foto', contato_id=contato.id, v=contato.foto[:8]) if contato and contato.foto else None) -%}
+<figure class="retrato retrato--{{ tamanho }}" data-retrato>
+  {%- if url %}
+  <img src="{{ url }}" alt="Foto de {{ contato.nome_exibicao if contato else 'contato' }}" {% if tamanho == 'mini' %}loading="lazy"{% endif %}>
+  {%- else %}
+  <span class="retrato__vazio">
+    <span class="retrato__iniciais">{{ (contato.nome if contato else '')|iniciais }}</span>
+    {%- if tamanho == 'grande' %}<span class="retrato__legenda">Foto 3×4</span>{% endif %}
+  </span>
+  {%- endif %}
+</figure>
+{%- endmacro %}
+
+{% macro selos(grupos, link=False) -%}
+{%- if grupos %}
+<div class="selos">
+  {%- for g in grupos %}
+  {%- if link %}<a class="selo selo--{{ g.ordem % 7 }}" href="{{ url_for('contatos.lista', grupo=g.id) }}">{{ g.nome }}</a>
+  {%- else %}<span class="selo selo--{{ g.ordem % 7 }}">{{ g.nome }}</span>{% endif %}
+  {%- endfor %}
+</div>
+{%- endif %}
+{%- endmacro %}
+
+{% macro valor(campo, contato) -%}
+{%- set v = contato[campo.chave] -%}
+{%- if campo.tipo == 'empresa' -%}
+  {%- if contato.empresa %}<div class="campo__valor"><a href="{{ url_for('contatos.lista', empresa=contato.empresa.id) }}">{{ contato.empresa.nome }}</a></div>
+  {%- else %}<div class="campo__valor campo__valor--vazio">—</div>{% endif -%}
+{%- elif not v -%}
+  <div class="campo__valor campo__valor--vazio">—</div>
+{%- elif campo.tipo == 'email' -%}
+  <div class="campo__valor"><a href="mailto:{{ v }}">{{ v }}</a></div>
+{%- elif campo.tipo == 'telefone' -%}
+  <div class="campo__valor"><a href="{{ v|telefone_link }}">{{ v }}</a></div>
+{%- else -%}
+  <div class="campo__valor">{{ v }}</div>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro entrada(campo, valores, erros, grupos=None) -%}
+{%- set v = valores.get(campo.chave) -%}
+<div class="campo campo--{{ campo.largura }}{% if erros.get(campo.chave) %} campo--erro{% endif %}">
+  <label class="campo__rotulo{% if campo.tipo == 'grupos' %} so-leitor{% endif %}" for="c-{{ campo.chave }}">{{ campo.rotulo }}</label>
+  {%- if campo.tipo == 'textarea' %}
+  <textarea class="entrada" id="c-{{ campo.chave }}" name="{{ campo.chave }}" rows="3">{{ v or '' }}</textarea>
+  {%- elif campo.tipo == 'empresa' %}
+  <div class="autocompletar" data-empresa>
+    <input class="entrada" id="c-empresa" name="empresa" value="{{ v or '' }}" maxlength="255"
+           autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list"
+           aria-controls="sugestoes-empresa" placeholder="Digite para buscar ou cadastrar">
+    <ul class="sugestoes" id="sugestoes-empresa" role="listbox" hidden></ul>
+  </div>
+  {%- elif campo.tipo == 'grupos' %}
+  <div class="opcoes-grupo" role="group" aria-label="Grupos de pesquisa">
+    {%- for g in grupos %}
+    <label class="opcao-grupo"><input type="checkbox" name="grupos" value="{{ g.id }}" {% if g.id in (v or []) %}checked{% endif %}><span>{{ g.nome }}{% if not g.ativo %} (inativo){% endif %}</span></label>
+    {%- else %}
+    <p class="campo__ajuda">Nenhum grupo cadastrado.</p>
+    {%- endfor %}
+  </div>
+  {%- else %}
+  <input class="entrada" id="c-{{ campo.chave }}" name="{{ campo.chave }}" value="{{ v or '' }}"
+         maxlength="{{ campo.tamanho }}"
+         {%- if campo.tipo == 'email' %} type="email" inputmode="email" autocomplete="off"
+         {%- elif campo.tipo == 'telefone' %} type="text" inputmode="tel" data-mascara="telefone"
+         {%- elif campo.tipo == 'cpf' %} type="text" inputmode="numeric" data-mascara="cpf" placeholder="000.000.000-00"
+         {%- elif campo.tipo == 'cnpj' %} type="text" inputmode="numeric" data-mascara="cnpj" placeholder="00.000.000/0000-00"
+         {%- else %} type="text"{% endif %}>
+  {%- endif %}
+  {%- if erros.get(campo.chave) %}<p class="campo__erro">{{ erros[campo.chave] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro situacao(s) -%}
+<span class="situacao situacao--{{ s.status }}">{{ s.rotulo_status }}</span>
+{%- endmacro %}
+
+{% macro mudancas(dicionario, rotulos) -%}
+{%- for chave, m in (dicionario or {}).items() %}
+{%- set de = m[0] if m is sequence and m is not mapping else m.get('de') -%}
+{%- set para = m[1] if m is sequence and m is not mapping else m.get('para') -%}
+<span class="mudanca"><b>{{ rotulos.get(chave, chave) }}:</b> {% if de %}<del>{{ de }}</del> → {% endif %}<ins>{{ para or '(apagado)' }}</ins></span>
+{%- endfor %}
+{%- endmacro %}
+
+{% macro paginacao(p, endpoint, args) -%}
+{%- if p.pages > 1 %}
+<nav class="paginacao" aria-label="Páginas">
+  {%- if p.has_prev %}<a href="{{ url_for(endpoint, pagina=p.prev_num, **args) }}">‹</a>{% endif %}
+  {%- for n in p.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {%- if n %}{% if n == p.page %}<span class="atual">{{ n }}</span>{% else %}<a href="{{ url_for(endpoint, pagina=n, **args) }}">{{ n }}</a>{% endif %}
+    {%- else %}<span>…</span>{% endif %}
+  {%- endfor %}
+  {%- if p.has_next %}<a href="{{ url_for(endpoint, pagina=p.next_num, **args) }}">›</a>{% endif %}
+</nav>
+{%- endif %}
+{%- endmacro %}

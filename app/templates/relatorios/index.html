@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, situacao, mudancas, paginacao as paginar %}
+{% block titulo %}Relatórios{% endblock %}
+{% block conteudo %}
+{% set args = {
+  'aba': f.aba,
+  'de': f.de.strftime('%Y-%m-%d') if f.de else None,
+  'ate': f.ate.strftime('%Y-%m-%d') if f.ate else None,
+  'contato': f.contato or None, 'usuario': f.usuario,
+  'acao': f.acao or None, 'origem': f.origem or None,
+  'status': f.status or None, 'tipo': f.tipo or None,
+} %}
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Relatórios</p>
+    <h1>Histórico</h1>
+    <p class="cabecalho__apoio">Toda alteração tem autor e data — feita pelo gestor ou aprovada a partir de uma solicitação.</p>
+  </div>
+  <div class="cabecalho__acoes">
+    <a class="botao botao--contorno" href="{{ url_for('relatorios.exportar', **args) }}">{{ icone('download', 'icone--p') }} Exportar planilha</a>
+  </div>
+</div>
+
+<nav class="abas">
+  <a class="aba{% if f.aba == 'historico' %} aba--ativa{% endif %}" href="{{ url_for('relatorios.index', aba='historico') }}">Alterações nas fichas</a>
+  <a class="aba{% if f.aba == 'solicitacoes' %} aba--ativa{% endif %}" href="{{ url_for('relatorios.index', aba='solicitacoes') }}">Solicitações</a>
+</nav>
+<div class="folha">
+  <form class="filtros-relatorio" method="get">
+    <input type="hidden" name="aba" value="{{ f.aba }}">
+    <div><label class="rotulo-pequeno" for="de">De</label><input class="campo-caixa" type="date" id="de" name="de" value="{{ args.de or '' }}"></div>
+    <div><label class="rotulo-pequeno" for="ate">Até</label><input class="campo-caixa" type="date" id="ate" name="ate" value="{{ args.ate or '' }}"></div>
+    <div><label class="rotulo-pequeno" for="contato">Contato</label><input class="campo-caixa" id="contato" name="contato" value="{{ f.contato }}" placeholder="Nome"></div>
+    <div><label class="rotulo-pequeno" for="usuario">Pessoa</label>
+      <select class="selecao" id="usuario" name="usuario"><option value="">Todas</option>
+        {% for u in usuarios %}<option value="{{ u.id }}" {% if u.id == f.usuario %}selected{% endif %}>{{ u.nome }}</option>{% endfor %}
+      </select></div>
+    {% if f.aba == 'historico' %}
+    <div><label class="rotulo-pequeno" for="acao">Ação</label>
+      <select class="selecao" id="acao" name="acao"><option value="">Todas</option>
+        {% for k, v in c.ACOES.items() %}<option value="{{ k }}" {% if k == f.acao %}selected{% endif %}>{{ v }}</option>{% endfor %}
+      </select></div>
+    <div><label class="rotulo-pequeno" for="origem">Origem</label>
+      <select class="selecao" id="origem" name="origem"><option value="">Todas</option>
+        {% for k, v in c.ORIGENS.items() %}<option value="{{ k }}" {% if k == f.origem %}selected{% endif %}>{{ v }}</option>{% endfor %}
+      </select></div>
+    {% else %}
+    <div><label class="rotulo-pequeno" for="tipo">Tipo</label>
+      <select class="selecao" id="tipo" name="tipo"><option value="">Todos</option>
+        {% for k, v in c.TIPOS_SOLICITACAO.items() %}<option value="{{ k }}" {% if k == f.tipo %}selected{% endif %}>{{ v }}</option>{% endfor %}
+      </select></div>
+    <div><label class="rotulo-pequeno" for="status">Situação</label>
+      <select class="selecao" id="status" name="status"><option value="">Todas</option>
+        {% for k, v in c.STATUS_SOLICITACAO.items() %}<option value="{{ k }}" {% if k == f.status %}selected{% endif %}>{{ v }}</option>{% endfor %}
+      </select></div>
+    {% endif %}
+    <div class="filtros-relatorio__botoes">
+      <button class="botao" type="submit">Filtrar</button>
+      <a class="botao botao--fantasma" href="{{ url_for('relatorios.index', aba=f.aba) }}">Limpar</a>
+    </div>
+  </form>
+
+  {% if paginacao.items %}
+  <p class="contagem-pequena" style="margin-bottom:10px">{{ paginacao.total }} registro(s)</p>
+  <div class="tabela-caixa">
+    <table class="tabela">
+      {% if f.aba == 'historico' %}
+      <thead><tr><th>Data</th><th>Contato</th><th>Ação</th><th>Origem</th><th>Feita por</th><th>O que mudou</th></tr></thead>
+      <tbody>
+      {% for h in paginacao.items %}
+        <tr>
+          <td style="white-space:nowrap">{{ h.criado_em|datahora }}</td>
+          <td>{% if h.contato and not h.contato.excluido_em %}<a href="{{ url_for('contatos.ficha', contato_id=h.contato_id) }}">{{ h.contato_nome }}</a>{% else %}{{ h.contato_nome or '—' }}{% endif %}</td>
+          <td>{{ h.rotulo_acao }}</td>
+          <td>{{ h.rotulo_origem }}{% if h.solicitacao_id %} · <a href="{{ url_for('solicitacoes.detalhe', solicitacao_id=h.solicitacao_id) }}">nº {{ h.solicitacao_id }}</a>{% endif %}</td>
+          <td>{{ h.usuario.nome if h.usuario else '—' }}</td>
+          <td style="font-size:13px">{{ mudancas(h.mudancas, rotulos) if h.mudancas else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      {% else %}
+      <thead><tr><th>Nº</th><th>Pedido em</th><th>Tipo</th><th>Contato</th><th>Solicitante</th><th>Situação</th><th>Decidida por</th><th></th></tr></thead>
+      <tbody>
+      {% for s in paginacao.items %}
+        <tr>
+          <td class="num">{{ s.id }}</td>
+          <td style="white-space:nowrap">{{ s.criado_em|datahora }}</td>
+          <td>{{ s.rotulo_tipo }}</td>
+          <td>{{ s.contato_nome }}</td>
+          <td>{{ s.solicitante.nome }}</td>
+          <td>{{ situacao(s) }}</td>
+          <td>{{ s.decidido_por.nome if s.decidido_por else '—' }}{% if s.decidido_em %}<br><span class="contagem-pequena">{{ s.decidido_em|datahora }}</span>{% endif %}</td>
+          <td class="tabela__acoes"><a class="botao botao--contorno botao--pequeno" href="{{ url_for('solicitacoes.detalhe', solicitacao_id=s.id) }}">Ver</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      {% endif %}
+    </table>
+  </div>
+  {{ paginar(paginacao, 'relatorios.index', args) }}
+  {% else %}
+  <div class="vazio"><p>Nenhum registro para os filtros escolhidos.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

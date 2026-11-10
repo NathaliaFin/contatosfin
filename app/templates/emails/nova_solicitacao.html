@@ -1,0 +1,24 @@
+{% extends "emails/_base.html" %}
+{% block corpo %}
+<p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#0028E6">Aguardando aprovação · nº {{ s.id }}</p>
+<h1 style="margin:0 0 14px;font-size:22px;color:#12143D">{{ s.rotulo_tipo }}: {{ s.contato_nome }}</h1>
+<p style="margin:0 0 18px;font-size:14px;line-height:1.6"><strong>{{ s.solicitante.nome }}</strong> enviou um pedido em {{ s.criado_em.strftime('%d/%m/%Y às %H:%M') }}. Nada muda na ficha até um gestor de dados aprovar.</p>
+{% if s.mudancas %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:13px;margin-bottom:16px">
+  <tr>
+    <th align="left" style="padding:8px;border-bottom:2px solid #0028E6;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#565B6E">Campo</th>
+    {% if s.tipo == 'alteracao' %}<th align="left" style="padding:8px;border-bottom:2px solid #0028E6;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#565B6E">Antes</th>{% endif %}
+    <th align="left" style="padding:8px;border-bottom:2px solid #0028E6;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#565B6E">Proposto</th>
+  </tr>
+  {% for chave, m in s.mudancas.items() %}
+  <tr>
+    <td style="padding:8px;border-bottom:1px solid #D5D9E3;font-weight:600;color:#565B6E">{{ rotulos.get(chave, chave) }}</td>
+    {% if s.tipo == 'alteracao' %}<td style="padding:8px;border-bottom:1px solid #D5D9E3;color:#8A8FA0">{{ m.de or '—' }}</td>{% endif %}
+    <td style="padding:8px;border-bottom:1px solid #D5D9E3;color:#0000A0;font-weight:600">{{ m.para or '(apagar)' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% if s.comentario %}<p style="margin:0 0 16px;padding:10px 14px;border-left:3px solid #A2A6AB;background:#F7F8FC;font-size:13px">{{ s.comentario }}</p>{% endif %}
+{% endblock %}
+{% block botao %}Analisar solicitação{% endblock %}

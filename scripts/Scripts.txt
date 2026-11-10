@@ -1,0 +1,180 @@
+SCRIPTS - SISTEMA CONTATOS FIN
+==============================
+
+Repositorio: https://github.com/NathaliaFin/contatosfin
+Servidor:    SRVAPP01 - azureuser@172.16.0.12
+Site:        https://contatos.fin.org.br/
+Banco:       MySQL no Azure (srvdb-web.mysql.database.azure.com),
+             banco e usuario "contatosfin"
+No servidor: pasta /var/www/contatos, servico "contatos",
+             logs em /var/log/contatos
+
+
+DESCRICAO DOS SCRIPTS
+---------------------
+
+0. destravar.bat
+    Use so quando o "1. antes de comecar.bat" reclamar de arquivos
+    alterados nesta maquina (geralmente efeito do OneDrive). Guarda as
+    alteracoes locais de lado (git stash) e baixa a versao do GitHub.
+    Nada e apagado.
+
+1. antes de comecar.bat
+    Rode ao abrir o projeto. Baixa a versao mais recente do codigo do
+    GitHub e instala as dependencias novas, se houver. Evita conflitos
+    quando voce trabalha em dois computadores.
+
+2. git-status.bat
+    Mostra quais arquivos foram modificados e ainda nao foram
+    enviados para o GitHub.
+
+3. atualizar-servidor.bat
+    Publica no site. Confere se a pasta esta igual ao GitHub, empacota
+    os arquivos, envia por SSH, instala as dependencias novas, aplica
+    as alteracoes do banco e reinicia o sistema.
+
+enviar-para-github.bat
+    Envia as alteracoes para o GitHub. Pede uma descricao do que mudou
+    e se recusa a enviar se o .env ou uma chave .pem estiver indo junto.
+
+    Se o envio for recusado com "non-fast-forward", o GitHub tem
+    alteracoes que o seu computador ainda nao baixou. Rode o
+    "1. antes de comecar.bat" e tente de novo. Nunca use
+    "git push --force".
+
+rodar-local.bat
+    Abre uma copia de teste no seu computador, em
+    http://127.0.0.1:5000, com banco proprio (SQLite). NAO mexe no
+    banco de producao.
+
+testar-banco.bat
+    Verifica se a conexao com o MySQL do Azure esta funcionando e
+    lista as tabelas existentes. A senha nunca aparece na tela.
+    Funciona mesmo antes de o sistema ter telas.
+
+ver-log-servidor.bat
+    Mostra a situacao do sistema no servidor e as ultimas mensagens de
+    erro. Use quando o site sair do ar ou uma publicacao falhar.
+
+preparar-servidor.bat        (uma vez so)
+    Instala o sistema do zero no SRVAPP01: ambiente Python, servico,
+    site no nginx e as tabelas do banco. So roda depois que o sistema
+    tiver o wsgi.py e o primeiro envio ao GitHub. Nao mexe no Portal
+    de Eventos, que roda no mesmo servidor. E seguro rodar de novo.
+
+ativar-producao.bat          (uma vez so)
+    Passa o sistema para o modo de producao. Antes confere se
+    https://contatos.fin.org.br/ ja chega ao servidor. Se algo falhar,
+    volta sozinho ao modo anterior.
+
+preparar-servidor.sh / ativar-producao.sh / testar_banco.py
+    Nao sao para clicar. Sao partes usadas pelos .bat acima.
+
+
+ORDEM DE USO NO DIA A DIA
+-------------------------
+
+1. antes de comecar.bat     -> ao abrir o projeto
+2. git-status.bat           -> opcional, para ver o que mudou
+3. Editar os arquivos
+4. rodar-local.bat          -> conferir no seu computador
+5. enviar-para-github.bat   -> ao terminar de editar
+6. 3. atualizar-servidor.bat -> para publicar no site
+
+O passo 6 e indispensavel. Enviar para o GitHub NAO publica nada: o
+servidor nao busca o codigo sozinho. Se a pagina parecer igual depois
+de publicar, use Ctrl+Shift+R.
+
+
+PRIMEIRA INSTALACAO
+-------------------
+
+1. enviar-para-github.bat   -> primeiro envio do codigo
+2. preparar-servidor.bat    -> instala tudo no 172.16.0.12
+3. ativar-producao.bat      -> modo de producao (depois que a
+                               infraestrutura apontar o dominio)
+
+
+COMO O HTTPS FUNCIONA AQUI
+--------------------------
+
+O certificado NAO fica no servidor. Na Fin o HTTPS e encerrado por um
+proxy da infraestrutura, que detem o certificado de *.fin.org.br e
+repassa a requisicao em HTTP simples para o nginx do servidor.
+
+Para o Contatos funcionar em https://contatos.fin.org.br/, a
+infraestrutura precisa configurar esse proxy para encaminhar o
+dominio contatos.fin.org.br para 172.16.0.12, porta 80.
+O encaminhamento ja existe (confirmado em 10/11/2026). Atencao: o
+endereco http:// (sem S) e respondido pelo Apache do site institucional
+e redireciona para https://fin.org.br/ - use sempre https://.
+Enquanto o Contatos nao estiver instalado no servidor, o https://
+responde "Bad Request (400)": e o Portal de Eventos recusando um
+dominio que nao e dele.
+
+NAO tente rodar certbot no servidor.
+
+
+PRE-REQUISITOS
+--------------
+
+- Estar na rede interna da FIN (VPN): o 172.16.0.12 nao e acessivel
+  pela internet.
+- A chave SRVWEB-HUBRI_KEY.pem na pasta Documentos, um nivel acima da
+  pasta do projeto. Ela NAO deve ficar dentro do projeto.
+- Python 3 e Git instalados no computador.
+
+
+O QUE E ENVIADO AO SERVIDOR
+---------------------------
+
+Somente os arquivos ja commitados no git. Fica de fora, de proposito:
+
+- .env ............ senha do banco e chave de seguranca. O servidor tem
+                    o proprio, com chave de seguranca diferente. Ele so
+                    e enviado uma vez, pelo preparar-servidor.bat.
+- instance/ ....... arquivos enviados pelo site. Ficam so no servidor.
+- .venv/ .......... o ambiente Python e montado no proprio servidor.
+
+
+ALTERACOES NO BANCO DE DADOS
+----------------------------
+
+Ao alterar a estrutura do banco (um campo novo, por exemplo), gere a
+migration antes de publicar:
+
+    .venv\Scripts\python.exe -m flask db migrate -m "descricao"
+
+O arquivo gerado vai para a pasta migrations/ e precisa ser commitado.
+O "3. atualizar-servidor.bat" aplica sozinho no servidor.
+
+A CHAVE DOS DADOS RESTRITOS - LEIA
+----------------------------------
+
+CPF, RG, CNPJ, estado civil e demais "dados restritos" sao gravados
+CIFRADOS no banco, com a chave CHAVE_DADOS_RESTRITOS do .env.
+
+- NUNCA troque essa chave depois que houver fichas cadastradas: tudo o
+  que foi gravado com a chave antiga fica ilegivel.
+- Guarde uma copia da linha CHAVE_DADOS_RESTRITOS em local seguro (cofre
+  de senhas da TI). Sem ela, um backup do banco nao recupera esses dados.
+- O preparar-servidor.bat leva a chave para o servidor junto com o .env.
+  A SECRET_KEY e trocada la (por seguranca); a chave dos dados restritos
+  NAO e trocada.
+
+
+E-MAIL E SSO
+------------
+
+E-mail: SMTP do Microsoft 365, igual ao sistema de reunioes. Enquanto o
+SMTP_PASSWORD do .env estiver vazio, nada e enviado e as mensagens ficam
+em instance/emails-nao-enviados.log.
+
+SSO: igual ao afin. Enquanto SSO_ENABLED=false ou faltar algum dado do
+Entra (AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET), o botao da
+Microsoft aparece como "em breve" e so a entrada por e-mail e senha
+funciona. O endereco de retorno a cadastrar no Entra e:
+    https://contatos.fin.org.br/auth/sso/callback
+
+Depois de alterar o .env do SERVIDOR (ex.: preencher a senha do e-mail),
+reinicie o sistema:  ssh ... "sudo systemctl restart contatos"

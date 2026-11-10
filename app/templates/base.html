@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block titulo %}Contatos{% endblock %} · Fin</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/montserrat-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body class="{% block classe_body %}{% endblock %}">
+{% include "_icones.html" %}
+{% from "_macros.html" import icone %}
+
+{% if current_user.is_authenticated %}
+{% set bp = request.blueprint %}
+<header class="topo">
+  <div class="topo__interno">
+    <a class="marca" href="{{ url_for('contatos.lista') }}" aria-label="Contatos Fin — início">
+      <img src="{{ url_for('static', filename='img/marca/fin_dec_hor_cor_rgb_neg-recorte.png') }}" alt="Fin — Confederação Nacional das Instituições Financeiras">
+      <span class="marca__sistema">Contatos</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a class="nav__item{% if bp == 'contatos' %} nav__item--ativo{% endif %}" href="{{ url_for('contatos.lista') }}">Fichário</a>
+      <a class="nav__item{% if bp == 'empresas' %} nav__item--ativo{% endif %}" href="{{ url_for('empresas.lista') }}">Empresas</a>
+      <a class="nav__item{% if bp == 'solicitacoes' %} nav__item--ativo{% endif %}" href="{{ url_for('solicitacoes.lista') }}">
+        {% if current_user.pode_gerir %}Solicitações{% if pendentes_nav %} <span class="contador" title="Aguardando aprovação">{{ pendentes_nav }}</span>{% endif %}{% else %}Minhas solicitações{% endif %}
+      </a>
+      {% if current_user.pode_gerir %}
+      <a class="nav__item{% if bp == 'relatorios' %} nav__item--ativo{% endif %}" href="{{ url_for('relatorios.index') }}">Relatórios</a>
+      <a class="nav__item{% if request.endpoint == 'admin.grupos' %} nav__item--ativo{% endif %}" href="{{ url_for('admin.grupos') }}">Grupos</a>
+      {% endif %}
+      {% if current_user.is_admin %}
+      <a class="nav__item{% if request.endpoint and request.endpoint.startswith('admin.usuario') %} nav__item--ativo{% endif %}" href="{{ url_for('admin.usuarios') }}">Usuários</a>
+      {% endif %}
+    </nav>
+    <div class="usuario-topo">
+      <div class="usuario-topo__nome">
+        <strong>{{ current_user.nome }}</strong>
+        <span>{{ current_user.rotulo_perfil }}</span>
+      </div>
+      <form method="post" action="{{ url_for('auth.sair') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="botao-sair" type="submit" title="Sair" aria-label="Sair">{{ icone('sair') }}</button>
+      </form>
+    </div>
+  </div>
+</header>
+{% endif %}
+
+<main class="pagina {% block classe_pagina %}{% endblock %}">
+  {% with recados = get_flashed_messages(with_categories=true) %}
+  {% if recados %}
+  <div class="recados" role="status">
+    {% for categoria, texto in recados %}
+    <div class="recado recado--{{ categoria }}">{{ texto }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% block conteudo %}{% endblock %}
+</main>
+
+<footer class="rodape">Confederação Nacional das Instituições Financeiras · Contatos</footer>
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

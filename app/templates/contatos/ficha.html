@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, retrato, selos, valor, mudancas, situacao %}
+{% block titulo %}{{ contato.nome_exibicao }}{% endblock %}
+{% block conteudo %}
+<div class="barra-acoes">
+  <a class="link-voltar" href="{{ url_for('contatos.lista') }}">{{ icone('voltar', 'icone--p') }} Fichário</a>
+  <div class="barra-acoes__botoes">
+    <button class="botao botao--fantasma botao--pequeno" type="button" onclick="window.print()">{{ icone('imprimir', 'icone--p') }} Imprimir</button>
+    {% if current_user.pode_gerir %}
+    <details class="menu">
+      <summary class="botao botao--perigo">{{ icone('lixeira', 'icone--p') }} Excluir</summary>
+      <form class="menu__caixa" method="post" action="{{ url_for('contatos.excluir', contato_id=contato.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <p>Excluir a ficha de <strong>{{ contato.nome_exibicao }}</strong>? Ela sai do fichário, mas o histórico continua nos relatórios.</p>
+        <button class="botao botao--perigo" type="submit">Confirmar exclusão</button>
+      </form>
+    </details>
+    <a class="botao" href="{{ url_for('contatos.editar', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }} Editar ficha</a>
+    {% else %}
+    <details class="menu">
+      <summary class="botao botao--contorno">{{ icone('lixeira', 'icone--p') }} Solicitar exclusão</summary>
+      <form class="menu__caixa" method="post" action="{{ url_for('contatos.solicitar_exclusao', contato_id=contato.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <p>O gestor de dados recebe o pedido por e-mail e decide. Nada é excluído antes disso.</p>
+        <label class="rotulo-pequeno" for="motivo-exclusao">Motivo (opcional)</label>
+        <textarea class="campo-caixa" id="motivo-exclusao" name="comentario" rows="3"></textarea>
+        <button class="botao" type="submit">{{ icone('enviar', 'icone--p') }} Enviar pedido</button>
+      </form>
+    </details>
+    <a class="botao" href="{{ url_for('contatos.solicitar_alteracao', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }} Solicitar alteração</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if pendente %}
+<div class="recado recado--pendente" style="max-width:1000px;margin:0 auto 26px">
+  Esta ficha tem alteração pendente de aprovação do gestor de dados. Os dados abaixo ainda são os vigentes.
+  {% if current_user.pode_gerir %}<a href="{{ url_for('solicitacoes.lista') }}">Ver solicitações</a>{% endif %}
+</div>
+{% endif %}
+
+<article class="ficha">
+  <div class="ficha__etiqueta"><span>Ficha nº</span><strong>{{ contato.numero }}</strong></div>
+
+  <header class="ficha__topo">
+    <div class="ficha__identificacao">
+      <p class="sobretitulo">Ficha de contato</p>
+      <h1>{{ contato.nome_exibicao }}</h1>
+      {% if contato.cargo or contato.empresa %}
+      <p class="ficha__cargo">
+        {{ contato.cargo or '' }}{% if contato.cargo and contato.empresa %} · {% endif %}
+        {% if contato.empresa %}<a href="{{ url_for('contatos.lista', empresa=contato.empresa.id) }}">{{ contato.empresa.nome }}</a>{% endif %}
+      </p>
+      {% endif %}
+      {{ selos(contato.grupos, link=True) }}
+    </div>
+    <div class="ficha__foto">{{ retrato(contato, 'grande') }}</div>
+    {% if pendente %}<span class="carimbo carimbo--grande">Alteração pendente</span>{% endif %}
+  </header>
+
+  {% set secoes = [('dados', ['email', 'celular', 'telefone_comercial', 'endereco_comercial']), ('secretaria', None), ('observacoes', None)] %}
+  {% if mostrar_restritos %}{% set secoes = secoes + [('restritos', None)] %}{% endif %}
+  {% for chave, apenas in secoes %}
+  <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">
+    <h2 class="secao__aba"><em>{{ '%02d' % loop.index }}</em> {{ c.SECOES[chave] }}{% if chave == 'restritos' %} {{ icone('cadeado', 'icone--p') }}{% endif %}</h2>
+    {% if chave == 'restritos' %}
+    <p class="secao__nota">Visível apenas para o gestor de dados e o administrador. Gravado com criptografia. <span class="carimbo carimbo--restrito">Confidencial</span></p>
+    {% endif %}
+    <div class="campos">
+      {% for campo in c.campos_da_secao(chave) if not apenas or campo.chave in apenas %}
+      <div class="campo campo--{{ campo.largura }}">
+        <span class="campo__rotulo">{{ campo.rotulo }}</span>
+        {{ valor(campo, contato) }}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <footer class="ficha__rodape">
+    <span>Cadastrada em <strong>{{ contato.criado_em|datahora }}</strong>{% if contato.criado_por %} por <strong>{{ contato.criado_por.nome }}</strong>{% endif %}</span>
+    {% if contato.atualizado_em %}<span>Última alteração em <strong>{{ contato.atualizado_em|datahora }}</strong>{% if contato.atualizado_por %} por <strong>{{ contato.atualizado_por.nome }}</strong>{% endif %}</span>{% endif %}
+  </footer>
+</article>
+
+{% if solicitacoes %}
+<section class="painel">
+  <h2>{% if current_user.pode_gerir %}Solicitações em aberto{% else %}Seus pedidos em aberto{% endif %}</h2>
+  <div class="tabela-caixa">
+    <table class="tabela">
+      <thead><tr><th>Nº</th><th>Tipo</th><th>Solicitante</th><th>Data</th><th>Situação</th><th></th></tr></thead>
+      <tbody>
+      {% for s in solicitacoes %}
+        <tr>
+          <td class="num">{{ s.id }}</td><td>{{ s.rotulo_tipo }}</td><td>{{ s.solicitante.nome }}</td>
+          <td>{{ s.criado_em|datahora }}</td><td>{{ situacao(s) }}</td>
+          <td class="tabela__acoes"><a class="botao botao--contorno botao--pequeno" href="{{ url_for('solicitacoes.detalhe', solicitacao_id=s.id) }}">{% if current_user.pode_gerir %}Analisar{% else %}Ver{% endif %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if historico %}
+<section class="painel">
+  <h2>Últimas alterações desta ficha</h2>
+  <ol class="linha-tempo">
+    {% for h in historico %}
+    <li>
+      <div class="linha-tempo__quando">{{ h.criado_em|datahora }} · {{ h.rotulo_acao }} · {{ h.rotulo_origem }}{% if h.usuario %} · {{ h.usuario.nome }}{% endif %}</div>
+      {% if h.mudancas %}<div class="linha-tempo__mudancas">{{ mudancas(h.mudancas, c.ROTULOS) }}</div>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  <p style="margin-top:14px"><a href="{{ url_for('relatorios.index', contato=contato.nome) }}">Ver histórico completo nos relatórios →</a></p>
+</section>
+{% endif %}
+{% endblock %}

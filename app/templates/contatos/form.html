@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, retrato, entrada %}
+{% set titulos = {'novo': 'Nova ficha', 'editar': 'Editar ficha', 'solicitar': 'Solicitar alteração', 'incluir': 'Sugerir novo contato'} %}
+{% block titulo %}{{ titulos[modo] }}{% endblock %}
+{% block conteudo %}
+{% set voltar = url_for('contatos.ficha', contato_id=contato.id) if contato else url_for('contatos.lista') %}
+{% set e_pedido = modo in ('solicitar', 'incluir') %}
+
+<div class="barra-acoes">
+  <a class="link-voltar" href="{{ voltar }}">{{ icone('voltar', 'icone--p') }} {% if contato %}Voltar à ficha{% else %}Fichário{% endif %}</a>
+</div>
+
+{% if e_pedido %}
+<div class="recado recado--info" style="max-width:1000px;margin:0 auto 26px">
+  {% if modo == 'solicitar' %}
+  Altere direto nos campos o que precisa mudar. <strong>Nada muda na ficha até o gestor de dados aprovar</strong> — ele recebe o pedido por e-mail.
+  {% else %}
+  Preencha o que souber: nenhum campo é obrigatório. O gestor de dados recebe o pedido por e-mail e decide se a ficha entra no fichário.
+  {% endif %}
+</div>
+{% endif %}
+
+<form class="ficha ficha--edicao" method="post" enctype="multipart/form-data" novalidate data-formulario-ficha>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="ficha__etiqueta"><span>{% if contato %}Ficha nº{% else %}Ficha{% endif %}</span><strong>{{ contato.numero if contato else 'NOVA' }}</strong></div>
+
+  <header class="ficha__topo">
+    <div class="ficha__identificacao">
+      <p class="sobretitulo">{{ titulos[modo] }}</p>
+      <h1>{{ contato.nome_exibicao if contato else (valores.nome or 'Novo contato') }}</h1>
+      <p class="ficha__cargo">Todos os campos são opcionais.</p>
+    </div>
+    <div class="ficha__foto seletor-foto">
+      {{ retrato(contato, 'grande') }}
+      <label class="botao botao--contorno botao--pequeno" for="foto">{{ icone('camera', 'icone--p') }} {% if contato and contato.foto %}Trocar foto{% else %}Enviar foto{% endif %}</label>
+      <input id="foto" name="foto" type="file" accept="image/jpeg,image/png,image/webp" data-foto>
+      {% if contato and contato.foto %}<label class="marcador" style="font-size:12px"><input type="checkbox" name="remover_foto" value="1"> Remover foto</label>{% endif %}
+      {% if erros.get('foto') %}<p class="campo__erro">{{ erros.foto }}</p>{% else %}<p class="campo__ajuda">JPG, PNG ou WEBP até 5 MB</p>{% endif %}
+    </div>
+  </header>
+
+  {% set secoes = ['dados', 'secretaria', 'grupos', 'observacoes'] + (['restritos'] if incluir_restritos else []) %}
+  {% for chave in secoes %}
+  <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">
+    <h2 class="secao__aba"><em>{{ '%02d' % loop.index }}</em> {{ c.SECOES[chave] }}{% if chave == 'restritos' %} {{ icone('cadeado', 'icone--p') }}{% endif %}</h2>
+    {% if chave == 'restritos' %}<p class="secao__nota">Visível apenas para o gestor de dados e o administrador. Gravado com criptografia.</p>{% endif %}
+    <div class="campos">
+      {% for campo in c.campos_da_secao(chave, incluir_restritos) %}
+      {{ entrada(campo, valores, erros, grupos) }}
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  {% if e_pedido %}
+  <section class="secao secao--cobalto{% if secoes|length is odd %} secao--direita{% endif %}">
+    <h2 class="secao__aba"><em>{{ '%02d' % (secoes|length + 1) }}</em> Recado ao gestor de dados</h2>
+    <div class="campos">
+      <div class="campo campo--inteira">
+        <label class="campo__rotulo" for="comentario">Comentário (opcional)</label>
+        <textarea class="entrada" id="comentario" name="comentario" rows="3" placeholder="Ex.: novo número informado pela secretária em 10/11">{{ comentario }}</textarea>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="ficha__acoes-form">
+    <a class="botao botao--fantasma" href="{{ voltar }}">Cancelar</a>
+    {% if e_pedido %}
+    <button class="botao" type="submit">{{ icone('enviar', 'icone--p') }} Enviar para aprovação</button>
+    {% else %}
+    <button class="botao" type="submit">{{ icone('check', 'icone--p') }} Salvar ficha</button>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

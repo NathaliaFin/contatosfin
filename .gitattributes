@@ -1,0 +1,25 @@
+# Normalizacao de quebras de linha.
+#
+# Sem isto o Git converte tudo para o padrao do Windows (CRLF), e um script
+# .sh com CRLF NAO executa no servidor Linux -- da erro de interpretador.
+
+* text=auto
+
+# Scripts que rodam no servidor Linux: sempre LF.
+*.sh   text eol=lf
+
+# Scripts que rodam no Windows: sempre CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# Arquivos binarios: nunca converter.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.xlsx binary
+*.zip  binary
+*.db   binary

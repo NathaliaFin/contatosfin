@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, situacao, retrato %}
+{% block titulo %}Solicitação nº {{ s.id }}{% endblock %}
+{% block conteudo %}
+<div class="barra-acoes">
+  <a class="link-voltar" href="{{ url_for('solicitacoes.lista') }}">{{ icone('voltar', 'icone--p') }} Solicitações</a>
+  {% if s.contato and not s.contato.excluido_em %}
+  <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.ficha', contato_id=s.contato.id) }}">Abrir a ficha atual</a>
+  {% endif %}
+</div>
+
+<article class="ficha">
+  <div class="ficha__etiqueta"><span>Protocolo nº</span><strong>{{ '%04d' % s.id }}</strong></div>
+  <header class="ficha__topo" style="grid-template-columns:1fr">
+    <div class="ficha__identificacao">
+      <p class="sobretitulo">{{ s.rotulo_tipo }}</p>
+      <h1>{{ s.contato_nome }}</h1>
+      <p class="ficha__cargo">{{ situacao(s) }}</p>
+    </div>
+  </header>
+
+  <div class="protocolo-meta">
+    <div><span class="campo__rotulo">Solicitante</span><div class="campo__valor">{{ s.solicitante.nome }}</div></div>
+    <div><span class="campo__rotulo">Pedido em</span><div class="campo__valor">{{ s.criado_em|datahora }}</div></div>
+    {% if s.decidido_em %}
+    <div><span class="campo__rotulo">{% if s.status == 'cancelada' %}Cancelada em{% else %}Decidida em{% endif %}</span><div class="campo__valor">{{ s.decidido_em|datahora }}</div></div>
+    <div><span class="campo__rotulo">Por</span><div class="campo__valor">{{ s.decidido_por.nome if s.decidido_por else '—' }}</div></div>
+    {% endif %}
+  </div>
+
+  {% if s.comentario %}
+  <section class="secao">
+    <h2 class="secao__aba"><em>01</em> Recado do solicitante</h2>
+    <div class="citacao">{{ s.comentario }}</div>
+  </section>
+  {% endif %}
+
+  <section class="secao secao--direita secao--cobalto">
+    <h2 class="secao__aba"><em>{{ '02' if s.comentario else '01' }}</em> {% if s.tipo == 'exclusao' %}Pedido{% else %}Dados propostos{% endif %}</h2>
+    {% if s.tipo == 'exclusao' %}
+    <p>O solicitante pede a <strong>exclusão</strong> desta ficha do fichário.</p>
+    {% else %}
+    {% set divergiu = namespace(algum=False) %}
+    <div class="tabela-caixa">
+      <table class="tabela tabela--comparacao">
+        <thead><tr>
+          <th>Campo</th>
+          {% if s.tipo == 'alteracao' %}<th>Antes (no pedido)</th>{% endif %}
+          {% if atual %}<th>Hoje na ficha</th>{% endif %}
+          <th>Proposto</th>
+        </tr></thead>
+        <tbody>
+        {% for chave, m in s.mudancas.items() if chave != 'foto' %}
+          {% set hoje = atual.get(chave) %}
+          {% set mudou_depois = atual and hoje != (m.de or '') %}
+          {% if mudou_depois %}{% set divergiu.algum = True %}{% endif %}
+          <tr>
+            <td>{{ rotulos.get(chave, chave) }}</td>
+            {% if s.tipo == 'alteracao' %}<td class="antes">{{ m.de or '—' }}</td>{% endif %}
+            {% if atual %}<td class="{% if mudou_depois %}divergente{% endif %}">{{ hoje or '—' }}{% if mudou_depois %} *{% endif %}</td>{% endif %}
+            <td class="proposto">{{ m.para or '(apagar)' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if divergiu.algum %}<p class="campo__ajuda" style="margin-top:10px">* Este campo foi alterado na ficha depois do pedido. Confira antes de aprovar.</p>{% endif %}
+    {% if s.foto_proposta or s.remover_foto %}
+    <div style="display:flex;gap:28px;align-items:flex-start;margin-top:26px;flex-wrap:wrap">
+      {% if s.foto_proposta %}
+      <div><span class="campo__rotulo" style="margin-bottom:16px">Foto proposta</span>{{ retrato(s.contato, 'grande', src=url_for('solicitacoes.foto', solicitacao_id=s.id)) }}</div>
+      {% endif %}
+      {% if s.remover_foto %}<p><strong>Pedido de remoção da foto atual.</strong></p>{% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+  </section>
+
+  {% if s.motivo_decisao %}
+  <section class="secao">
+    <h2 class="secao__aba">Resposta do gestor de dados</h2>
+    <div class="citacao">{{ s.motivo_decisao }}</div>
+  </section>
+  {% endif %}
+
+  {% if s.pendente %}
+  {% if current_user.pode_gerir %}
+  <section class="secao">
+    <h2 class="secao__aba">Decisão</h2>
+    <form class="decisao" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="rotulo-pequeno" for="motivo">Resposta ao solicitante (opcional na aprovação, recomendada na recusa)</label>
+      <textarea class="campo-caixa" id="motivo" name="motivo" rows="3"></textarea>
+      <div class="decisao__botoes">
+        <button class="botao botao--ok" type="submit" formaction="{{ url_for('solicitacoes.aprovar', solicitacao_id=s.id) }}">{{ icone('check', 'icone--p') }} Aprovar e aplicar</button>
+        <button class="botao botao--perigo" type="submit" formaction="{{ url_for('solicitacoes.recusar', solicitacao_id=s.id) }}">{{ icone('x', 'icone--p') }} Recusar</button>
+      </div>
+    </form>
+  </section>
+  {% elif s.solicitante_id == current_user.id %}
+  <form method="post" action="{{ url_for('solicitacoes.cancelar', solicitacao_id=s.id) }}" style="margin-top:30px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="botao botao--perigo botao--pequeno" type="submit">Cancelar esta solicitação</button>
+  </form>
+  {% endif %}
+  {% endif %}
+</article>
+{% endblock %}

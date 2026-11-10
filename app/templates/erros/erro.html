@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<section class="ficha ficha--erro">
+  <p class="codigo">{{ codigo }}</p>
+  <h1>{{ titulo }}</h1>
+  <p>{{ texto }}</p>
+  <a class="botao" href="{{ url_for('contatos.lista') if current_user.is_authenticated else url_for('auth.login') }}">Voltar ao fichário</a>
+</section>
+{% endblock %}

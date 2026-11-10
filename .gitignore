@@ -1,0 +1,17 @@
+# Segredos - nunca versionar
+.env
+*.pem
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Banco local de teste
+instance/
+
+# Uploads e sistema
+uploads/
+*.log
+.DS_Store
+Thumbs.db

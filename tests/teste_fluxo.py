@@ -1,0 +1,192 @@
+"""Teste de ponta a ponta do Contatos Fin (copia local SQLite)."""
+import io
+import re
+import sys
+
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import preview_local  # popula instance/preview.db (copia de teste)
+from PIL import Image
+
+app = preview_local.app
+app.config["WTF_CSRF_ENABLED"] = False
+from app import constants as c
+from app.extensions import db
+from app.models import Contato, Empresa, Historico, Solicitacao
+from sqlalchemy import text
+
+falhas = []
+
+
+def ok(cond, msg):
+    print(("  OK   " if cond else "  FALHA ") + msg)
+    if not cond:
+        falhas.append(msg)
+
+
+def entrar(cli, email):
+    cli.post("/auth/sair")
+    r = cli.post("/auth/login", data={"email": email, "senha": "Fin@2026"})
+    return r
+
+
+def png(cor=(0, 40, 230), tamanho=(800, 600)):
+    b = io.BytesIO()
+    Image.new("RGB", tamanho, cor).save(b, "PNG")
+    b.seek(0)
+    return b
+
+
+with app.app_context():
+    cli = app.test_client()
+
+    print("\n[1] Login e permissoes")
+    r = cli.get("/contatos")
+    ok(r.status_code == 302 and "/auth/login" in r.location, "anonimo redirecionado ao login")
+    r = cli.get("/auth/login")
+    ok(r.status_code == 200 and b"Contatos" in r.data, "tela de login abre")
+    r = cli.post("/auth/login", data={"email": "usuario@fin.org.br", "senha": "errada"})
+    ok(r.status_code == 401, "senha errada recusada")
+
+    entrar(cli, "usuario@fin.org.br")
+    r = cli.get("/contatos")
+    ok(r.status_code == 200 and b"Helena Duarte" in r.data, "usuario ve o fichario")
+    ok(b"Altera\xc3\xa7\xc3\xa3o pendente" in r.data, "carimbo de alteracao pendente aparece na lista")
+    ok(cli.get("/contatos/novo").status_code == 403, "usuario NAO cria ficha direto")
+    ok(cli.get("/relatorios/").status_code == 403, "usuario NAO ve relatorios")
+    ok(cli.get("/admin/usuarios").status_code == 403, "usuario NAO ve administracao")
+    helena = Contato.query.filter_by(nome="Helena Duarte Vasconcelos").first()
+    r = cli.get(f"/contatos/{helena.id}")
+    ok(r.status_code == 200 and b"Dados restritos" not in r.data and b"casada" not in r.data, "usuario NAO ve dados restritos")
+    ok(cli.post(f"/contatos/{helena.id}/editar", data={"nome": "X"}).status_code == 403, "usuario NAO edita direto (POST)")
+
+    print("\n[2] Busca sem diferenca de maiusculas/acentos")
+    r = cli.get("/contatos?q=ABEL")
+    ok(b"Helena Duarte" in r.data and b"Carlos Eduardo" in r.data, "busca 'ABEL' acha as duas fichas")
+    r = cli.get("/contatos?q=angela")
+    ok("Ângela".encode() in r.data, "busca 'angela' acha 'Ângela'")
+    ok(Empresa.query.filter(Empresa.nome_normalizado.like("abel%")).count() == 1, "'ABEL' e 'abel' viraram UMA empresa so")
+    r = cli.get("/empresas/buscar?q=abEL")
+    ok(r.is_json and len(r.json) == 1, "autocompletar de empresa ignora maiusculas")
+    r = cli.post("/empresas/criar", json={"nome": "aBeCiP"})
+    ok(r.json["criada"] is False and r.json["nome"] == "ABECIP", "cadastrar 'aBeCiP' reaproveita 'ABECIP'")
+    r = cli.post("/empresas/criar", json={"nome": "Nova Entidade Teste"})
+    ok(r.json["criada"] is True, "usuario comum cadastra empresa nova")
+
+    print("\n[3] Usuario solicita alteracao")
+    r = cli.get(f"/contatos/{helena.id}/solicitar-alteracao")
+    ok(r.status_code == 200 and b'name="cpf"' not in r.data, "formulario do usuario sem campos restritos")
+    form = {
+        "nome": helena.nome, "cargo": "Presidente", "empresa": helena.empresa.nome,
+        "email": helena.email, "celular": "11 9 1234-5678", "telefone_comercial": "",
+        "endereco_comercial": "", "secretaria_nome": helena.secretaria_nome,
+        "secretaria_email": helena.secretaria_email, "secretaria_celular": helena.secretaria_celular,
+        "inicio_mandato": helena.inicio_mandato, "horario_trabalho": helena.horario_trabalho,
+        "ramal": helena.ramal, "preferencias": helena.preferencias, "observacoes": "",
+        "grupos": [str(g.id) for g in helena.grupos], "comentario": "Telefone novo",
+        "cpf": "111.444.777-35",  # tentativa de injetar dado restrito: deve ser ignorada
+    }
+    r = cli.post(f"/contatos/{helena.id}/solicitar-alteracao", data={**form, "email": "invalido@"})
+    ok(r.status_code == 400 and "E-mail em formato inválido".encode() in r.data, "e-mail invalido e barrado")
+    r = cli.post(f"/contatos/{helena.id}/solicitar-alteracao",
+                 data={**form, "foto": (png(), "foto.png")}, content_type="multipart/form-data")
+    ok(r.status_code == 302, "solicitacao enviada")
+    s = Solicitacao.query.order_by(Solicitacao.id.desc()).first()
+    db.session.refresh(helena)
+    ok(s.tipo == c.TIPO_ALTERACAO and s.pendente, "solicitacao gravada como pendente")
+    ok(set(s.dados) == {"celular"} and s.dados["celular"] == "(11) 91234-5678", "so o campo alterado vai no pedido, ja formatado")
+    ok("cpf" not in s.dados, "dado restrito injetado foi ignorado")
+    ok(helena.celular == "(11) 98888-1001", "ficha NAO mudou antes da aprovacao")
+    ok(s.foto_proposta and not helena.foto, "foto proposta guardada sem trocar a foto da ficha")
+    log = (preview_local.INSTANCE / "emails-nao-enviados.log").read_text(encoding="utf-8")
+    ok("gestor@fin.org.br" in log and f"Nº {s.id}" in log, "e-mail ao gestor gerado (log local, SMTP sem senha)")
+    r = cli.get(f"/contatos/{helena.id}")
+    ok("Alteração pendente".encode() in r.data, "ficha mostra 'Alteracao pendente'")
+    ok(cli.post(f"/solicitacoes/{s.id}/aprovar").status_code == 403, "usuario NAO aprova o proprio pedido")
+
+    print("\n[4] Gestor aprova")
+    entrar(cli, "gestor@fin.org.br")
+    r = cli.get("/solicitacoes/")
+    ok(r.status_code == 200 and b"Helena" in r.data, "fila de solicitacoes do gestor")
+    r = cli.get(f"/solicitacoes/{s.id}")
+    ok(b"(11) 91234-5678" in r.data and b"Aprovar" in r.data, "tela de analise mostra antes/depois")
+    ok(cli.get(f"/solicitacoes/{s.id}/foto").status_code == 200, "gestor ve a foto proposta")
+    r = cli.post(f"/solicitacoes/{s.id}/aprovar", data={"motivo": "Confirmado com a secretaria."})
+    ok(r.status_code == 302, "aprovacao executada")
+    db.session.refresh(helena); db.session.refresh(s)
+    ok(helena.celular == "(11) 91234-5678" and s.status == c.STATUS_APROVADA, "ficha atualizada e pedido aprovado")
+    ok(helena.foto == s.foto_proposta, "foto aplicada na ficha")
+    ok(cli.get(f"/contatos/{helena.id}/foto").status_code == 200, "foto da ficha servida")
+    h = Historico.query.filter_by(solicitacao_id=s.id).first()
+    ok(h and h.origem == c.ORIGEM_SOLICITACAO and "celular" in h.mudancas, "historico registra a aprovacao")
+    log = (preview_local.INSTANCE / "emails-nao-enviados.log").read_text(encoding="utf-8")
+    ok("usuario@fin.org.br" in log and "aprovada" in log, "e-mail de decisao ao solicitante gerado")
+
+    print("\n[5] Gestor edita direto, dados restritos cifrados")
+    r = cli.get(f"/contatos/{helena.id}")
+    ok(b"Dados restritos" in r.data and b"casada" in r.data, "gestor ve dados restritos")
+    valores = {**form, "cpf": "111.444.777-35", "cnpj": "", "rg": "12.345.678-9 SSP/SP", "nacionalidade": "brasileira",
+               "estado_civil": "casada", "qualificacao": "dirigente de entidade de classe", "fidelidade_aerea": "Smiles 123",
+               "celular": "(11) 91234-5678"}
+    r = cli.post(f"/contatos/{helena.id}/editar", data={**valores, "cpf": "123.456.789-00"})
+    ok(r.status_code == 400 and b"CPF inv" in r.data, "CPF com digito errado e barrado")
+    r = cli.post(f"/contatos/{helena.id}/editar", data=valores)
+    ok(r.status_code == 302, "edicao direta salva")
+    bruto = db.session.execute(text("SELECT cpf, rg FROM contatos WHERE id=:i"), {"i": helena.id}).first()
+    ok(bruto[0] and "111" not in bruto[0] and bruto[0].startswith("gAAAA"), "CPF gravado CIFRADO no banco")
+    db.session.expire_all()
+    ok(db.session.get(Contato, helena.id).cpf == "111.444.777-35", "CPF decifrado ao ler")
+    h = Historico.query.filter_by(contato_id=helena.id, origem=c.ORIGEM_DIRETA, acao=c.ACAO_ALTERACAO).order_by(Historico.id.desc()).first()
+    ok(h and h.mudancas.get("cpf") == ["", c.VALOR_RESTRITO] and "111" not in str(h.mudancas), "historico NAO guarda CPF em claro")
+
+    print("\n[6] Inclusao e exclusao pelo usuario, recusa pelo gestor")
+    entrar(cli, "usuario@fin.org.br")
+    r = cli.post("/contatos/solicitar-inclusao", data={"nome": "Contato Sugerido", "empresa": "nova entidade TESTE", "comentario": "Conheci no evento"})
+    ok(r.status_code == 302, "usuario sugere novo contato")
+    inc = Solicitacao.query.filter_by(tipo=c.TIPO_INCLUSAO).first()
+    ok(Contato.query.filter_by(nome="Contato Sugerido").count() == 0, "contato sugerido ainda NAO entra no fichario")
+    alvo = Contato.query.filter_by(nome="Otávio Martins Leal").first()
+    cli.post(f"/contatos/{alvo.id}/solicitar-exclusao", data={"comentario": "Não atua mais"})
+    exc = Solicitacao.query.filter_by(tipo=c.TIPO_EXCLUSAO).first()
+    entrar(cli, "gestor@fin.org.br")
+    cli.post(f"/solicitacoes/{inc.id}/aprovar")
+    novo = Contato.query.filter_by(nome="Contato Sugerido").first()
+    ok(novo is not None and novo.empresa.nome == "Nova Entidade Teste", "inclusao aprovada cria a ficha e reaproveita a empresa")
+    cli.post(f"/solicitacoes/{exc.id}/recusar", data={"motivo": "Ainda é conselheiro."})
+    db.session.refresh(exc); db.session.refresh(alvo)
+    ok(exc.status == c.STATUS_RECUSADA and alvo.excluido_em is None, "exclusao recusada mantem a ficha")
+    r = cli.post(f"/contatos/{alvo.id}/excluir")
+    db.session.refresh(alvo)
+    ok(alvo.excluido_em is not None and cli.get(f"/contatos/{alvo.id}").status_code == 404, "gestor exclui (exclusao logica)")
+
+    print("\n[7] Relatorios, CSV e telas restantes")
+    r = cli.get("/relatorios/")
+    ok(r.status_code == 200 and b"Helena" in r.data, "relatorio de historico")
+    r = cli.get("/relatorios/?aba=solicitacoes&status=aprovada")
+    ok(r.status_code == 200, "relatorio de solicitacoes filtrado")
+    r = cli.get("/relatorios/exportar?aba=historico")
+    ok(r.status_code == 200 and r.data.startswith("﻿".encode()) and "Ação".encode() in r.data, "CSV exportado com BOM")
+    for url in ["/empresas/", "/admin/grupos", "/contatos/novo", f"/contatos/{helena.id}/editar", "/contatos?letra=H", "/contatos?pendentes=1"]:
+        ok(cli.get(url).status_code == 200, f"GET {url}")
+    ok(cli.get("/admin/usuarios").status_code == 403, "gestor NAO ve usuarios (so admin)")
+
+    print("\n[8] Administrador")
+    entrar(cli, "admin@fin.org.br")
+    ok(cli.get("/admin/usuarios").status_code == 200, "admin ve usuarios")
+    r = cli.post("/admin/usuarios/novo", data={"nome": "Nova Gestora", "email": "nova@fin.org.br", "perfil": "gestor", "ativo": "1"})
+    ok(r.status_code == 302, "admin cria gestor")
+    from app.models import Usuario
+    eu = Usuario.query.filter_by(email="admin@fin.org.br").first()
+    r = cli.post(f"/admin/usuarios/{eu.id}", data={"nome": eu.nome, "email": eu.email, "perfil": "usuario", "ativo": "1"})
+    ok(r.status_code == 400, "admin NAO rebaixa a si mesmo")
+    r = cli.post("/admin/grupos", data={"acao": "criar", "nome": "Comitê Jurídico"})
+    ok(r.status_code == 302, "grupo criado")
+
+    print("\n[9] Foto invalida")
+    entrar(cli, "gestor@fin.org.br")
+    r = cli.post("/contatos/novo", data={"nome": "Teste Foto", "foto": (io.BytesIO(b"nao sou imagem"), "x.jpg")},
+                 content_type="multipart/form-data")
+    ok(r.status_code == 400 and "não é uma imagem".encode() in r.data, "arquivo falso recusado")
+
+print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
+sys.exit(1 if falhas else 0)

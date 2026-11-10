@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, situacao %}
+{% block titulo %}Solicitações{% endblock %}
+{% block conteudo %}
+
+{% macro tabela(itens, mostrar_solicitante=True, vazio='Nada por aqui.') %}
+{% if itens %}
+<div class="tabela-caixa">
+  <table class="tabela">
+    <thead><tr>
+      <th>Nº</th><th>Tipo</th><th>Contato</th>{% if mostrar_solicitante %}<th>Solicitante</th>{% endif %}
+      <th>Pedido em</th><th>Situação</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for s in itens %}
+      <tr>
+        <td class="num">{{ s.id }}</td>
+        <td>{{ s.rotulo_tipo }}</td>
+        <td>{% if s.contato and not s.contato.excluido_em %}<a href="{{ url_for('contatos.ficha', contato_id=s.contato.id) }}">{{ s.contato_nome }}</a>{% else %}{{ s.contato_nome }}{% endif %}</td>
+        {% if mostrar_solicitante %}<td>{{ s.solicitante.nome }}</td>{% endif %}
+        <td>{{ s.criado_em|datahora }}</td>
+        <td>{{ situacao(s) }}</td>
+        <td class="tabela__acoes"><a class="botao {% if s.pendente and current_user.pode_gerir %}{% else %}botao--contorno {% endif %}botao--pequeno" href="{{ url_for('solicitacoes.detalhe', solicitacao_id=s.id) }}">{% if s.pendente and current_user.pode_gerir %}Analisar{% else %}Ver{% endif %}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="vazio"><p>{{ vazio }}</p></div>
+{% endif %}
+{% endmacro %}
+
+{% if minhas is not none %}
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Protocolo</p>
+    <h1>Minhas solicitações</h1>
+    <p class="cabecalho__apoio">Pedidos de inclusão, alteração e exclusão que você enviou ao gestor de dados.</p>
+  </div>
+  <div class="cabecalho__acoes"><a class="botao botao--contorno" href="{{ url_for('contatos.solicitar_inclusao') }}">{{ icone('mais') }} Sugerir novo contato</a></div>
+</div>
+{{ tabela(minhas, mostrar_solicitante=False, vazio='Você ainda não fez nenhuma solicitação. Para pedir uma alteração, abra a ficha do contato e clique em “Solicitar alteração”.') }}
+{% else %}
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Protocolo</p>
+    <h1>Solicitações</h1>
+    <p class="cabecalho__apoio">Pedidos dos usuários aguardando a decisão do gestor de dados.</p>
+  </div>
+</div>
+<nav class="abas"><span class="aba aba--ativa">Aguardando aprovação <span class="contador">{{ pendentes|length }}</span></span></nav>
+<div class="folha">{{ tabela(pendentes, vazio='Nenhuma solicitação aguardando aprovação.') }}</div>
+
+<h2 class="sobretitulo" style="margin:40px 0 14px">Decididas recentemente</h2>
+{{ tabela(decididas, vazio='Nenhuma solicitação decidida ainda.') }}
+<p style="margin-top:14px;font-size:13px"><a href="{{ url_for('relatorios.index', aba='solicitacoes') }}">Histórico completo nos relatórios →</a></p>
+{% endif %}
+{% endblock %}

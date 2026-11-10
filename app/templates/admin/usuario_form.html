@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone %}
+{% block titulo %}{{ 'Editar usuário' if usuario else 'Novo usuário' }}{% endblock %}
+{% block conteudo %}
+<div class="barra-acoes" style="max-width:720px">
+  <a class="link-voltar" href="{{ url_for('admin.usuarios') }}">{{ icone('voltar', 'icone--p') }} Usuários</a>
+</div>
+<form class="ficha ficha--edicao" method="post" novalidate style="max-width:720px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="ficha__etiqueta"><span>Usuário</span><strong>{{ '%04d' % usuario.id if usuario else 'NOVO' }}</strong></div>
+  <header class="ficha__topo" style="grid-template-columns:1fr">
+    <div class="ficha__identificacao">
+      <p class="sobretitulo">Administração</p>
+      <h1>{{ usuario.nome if usuario else 'Novo usuário' }}</h1>
+    </div>
+  </header>
+
+  <section class="secao">
+    <h2 class="secao__aba"><em>01</em> Identificação</h2>
+    <div class="campos">
+      <div class="campo campo--inteira{% if erros.nome %} campo--erro{% endif %}">
+        <label class="campo__rotulo" for="nome">Nome</label>
+        <input class="entrada" id="nome" name="nome" value="{{ dados.nome }}" maxlength="200">
+        {% if erros.nome %}<p class="campo__erro">{{ erros.nome }}</p>{% endif %}
+      </div>
+      <div class="campo campo--inteira{% if erros.email %} campo--erro{% endif %}">
+        <label class="campo__rotulo" for="email">E-mail (o mesmo da conta Microsoft)</label>
+        <input class="entrada" id="email" name="email" type="email" value="{{ dados.email }}" maxlength="254">
+        {% if erros.email %}<p class="campo__erro">{{ erros.email }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="secao secao--direita secao--cobalto">
+    <h2 class="secao__aba"><em>02</em> Perfil de acesso</h2>
+    <div class="campos">
+      <div class="campo campo--inteira{% if erros.perfil %} campo--erro{% endif %}">
+        <span class="campo__rotulo">Perfil</span>
+        <div class="opcoes-grupo" style="margin-top:8px">
+          {% for k, v in PERFIS.items() %}
+          <label class="opcao-grupo"><input type="radio" name="perfil" value="{{ k }}" {% if dados.perfil == k %}checked{% endif %}><span>{{ v }}</span></label>
+          {% endfor %}
+        </div>
+        <p class="campo__ajuda"><strong>Usuário</strong>: consulta e solicita alterações. <strong>Gestor de dados</strong>: inclui, edita, exclui, aprova pedidos, vê dados restritos e relatórios. <strong>Administrador</strong>: tudo, inclusive esta área.</p>
+        {% if erros.perfil %}<p class="campo__erro">{{ erros.perfil }}</p>{% endif %}
+      </div>
+      <div class="campo campo--inteira{% if erros.ativo %} campo--erro{% endif %}">
+        <label class="marcador"><input type="checkbox" name="ativo" value="1" {% if dados.ativo %}checked{% endif %}> Acesso ativo</label>
+        {% if erros.ativo %}<p class="campo__erro">{{ erros.ativo }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2 class="secao__aba"><em>03</em> Senha local (opcional)</h2>
+    <p class="secao__nota">A entrada normal é pela conta Microsoft. Defina senha só para acesso de emergência ou para quem não tem conta da Fin.</p>
+    <div class="campos">
+      <div class="campo{% if erros.senha %} campo--erro{% endif %}">
+        <label class="campo__rotulo" for="senha">{% if usuario and usuario.senha_hash %}Nova senha{% else %}Senha{% endif %}</label>
+        <input class="entrada" id="senha" name="senha" type="password" autocomplete="new-password">
+        {% if erros.senha %}<p class="campo__erro">{{ erros.senha }}</p>{% else %}<p class="campo__ajuda">Mínimo de 10 caracteres. Em branco: mantém como está.</p>{% endif %}
+      </div>
+      {% if usuario and usuario.senha_hash %}
+      <div class="campo"><label class="marcador" style="margin-top:22px"><input type="checkbox" name="remover_senha" value="1"> Remover a senha local</label></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="ficha__acoes-form">
+    <a class="botao botao--fantasma" href="{{ url_for('admin.usuarios') }}">Cancelar</a>
+    <button class="botao" type="submit">{{ icone('check', 'icone--p') }} Salvar</button>
+  </div>
+</form>
+{% endblock %}

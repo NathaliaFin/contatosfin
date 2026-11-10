@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<body style="margin:0;padding:0;background:#E8EBF2;font-family:Montserrat,'Segoe UI',Arial,sans-serif;color:#2B2F45">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#E8EBF2;padding:28px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #D5D9E3;border-radius:8px;overflow:hidden">
+        <tr><td style="background:#0000A0;padding:18px 28px;border-bottom:3px solid #0028E6">
+          <span style="color:#ffffff;font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase">Fin · Contatos</span>
+        </td></tr>
+        <tr><td style="padding:28px 28px 8px">
+          {% block corpo %}{% endblock %}
+        </td></tr>
+        <tr><td style="padding:8px 28px 28px">
+          <a href="{{ link }}" style="display:inline-block;background:#0028E6;color:#ffffff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:13px 22px;border-radius:4px">{% block botao %}Abrir no sistema{% endblock %}</a>
+        </td></tr>
+        <tr><td style="padding:16px 28px;background:#F7F8FC;border-top:1px dashed #B4BACB;font-size:11px;color:#8A8FA0">
+          Mensagem automática do sistema Contatos da Confederação Nacional das Instituições Financeiras. Não responda.
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "emails/_base.html" %}
+{% block corpo %}
+{% set cor = '#17734A' if s.status == 'aprovada' else '#B3261E' %}
+<p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:{{ cor }}">Solicitação {{ s.rotulo_status|lower }} · nº {{ s.id }}</p>
+<h1 style="margin:0 0 14px;font-size:22px;color:#12143D">{{ s.rotulo_tipo }}: {{ s.contato_nome }}</h1>
+<p style="margin:0 0 16px;font-size:14px;line-height:1.6">
+  {% if s.status == 'aprovada' %}Seu pedido foi aprovado por <strong>{{ s.decidido_por.nome }}</strong> e já está aplicado na ficha.
+  {% else %}Seu pedido foi recusado por <strong>{{ s.decidido_por.nome }}</strong>. A ficha continua como estava.{% endif %}
+</p>
+{% if s.motivo_decisao %}<p style="margin:0 0 16px;padding:10px 14px;border-left:3px solid {{ cor }};background:#F7F8FC;font-size:13px">{{ s.motivo_decisao }}</p>{% endif %}
+{% endblock %}
+{% block botao %}Ver solicitação{% endblock %}

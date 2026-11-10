@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone %}
+{% block titulo %}Usuários{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Administração</p>
+    <h1>Usuários e perfis</h1>
+    <p class="cabecalho__apoio">Contas Microsoft @{{ config.SSO_DOMINIO }} entram sozinhas com o perfil <strong>Usuário</strong>. Aqui você promove a gestor de dados ou administrador, desativa acessos e cadastra pessoas de fora do domínio.</p>
+  </div>
+  <div class="cabecalho__acoes"><a class="botao" href="{{ url_for('admin.usuario_novo') }}">{{ icone('mais') }} Novo usuário</a></div>
+</div>
+
+<form class="filtros" method="get" style="grid-template-columns:1fr 220px auto">
+  <div class="busca">{{ icone('busca') }}<input class="campo-caixa" name="q" value="{{ q }}" placeholder="Nome ou e-mail" aria-label="Buscar usuário"></div>
+  <select class="selecao" name="perfil" aria-label="Perfil">
+    <option value="">Todos os perfis</option>
+    {% for k, v in PERFIS.items() %}<option value="{{ k }}" {% if k == perfil %}selected{% endif %}>{{ v }}</option>{% endfor %}
+  </select>
+  <button class="botao" type="submit">Filtrar</button>
+</form>
+
+<div class="tabela-caixa">
+  <table class="tabela">
+    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Acesso</th><th>Último acesso</th><th></th></tr></thead>
+    <tbody>
+    {% for u in usuarios %}
+      <tr{% if not u.ativo %} style="opacity:.55"{% endif %}>
+        <td><strong>{{ u.nome }}</strong></td>
+        <td>{{ u.email }}</td>
+        <td><span class="etiqueta-perfil etiqueta-perfil--{{ u.perfil }}">{{ u.rotulo_perfil }}</span></td>
+        <td class="contagem-pequena">{% if not u.ativo %}Inativo{% else %}{% if u.azure_oid %}Microsoft{% endif %}{% if u.azure_oid and u.senha_hash %} + {% endif %}{% if u.senha_hash %}Senha{% endif %}{% if not u.azure_oid and not u.senha_hash %}Aguardando 1º acesso{% endif %}{% endif %}</td>
+        <td class="contagem-pequena">{{ u.ultimo_acesso|datahora }}</td>
+        <td class="tabela__acoes"><a class="botao botao--contorno botao--pequeno" href="{{ url_for('admin.usuario_editar', usuario_id=u.id) }}">Editar</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="apagado">Nenhum usuário encontrado.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

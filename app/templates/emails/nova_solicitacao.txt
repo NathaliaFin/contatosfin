@@ -1,0 +1,12 @@
+CONTATOS FIN - SOLICITACAO Nº {{ s.id }} AGUARDANDO APROVACAO
+
+{{ s.rotulo_tipo }}: {{ s.contato_nome }}
+Solicitante: {{ s.solicitante.nome }} ({{ s.solicitante.email }})
+Data: {{ s.criado_em.strftime('%d/%m/%Y %H:%M') }}
+{% if s.mudancas %}
+Mudancas pedidas:
+{% for chave, m in s.mudancas.items() %}- {{ rotulos.get(chave, chave) }}: {% if s.tipo == 'alteracao' %}{{ m.de or '(vazio)' }} -> {% endif %}{{ m.para or '(apagar)' }}
+{% endfor %}{% endif %}{% if s.comentario %}
+Recado: {{ s.comentario }}
+{% endif %}
+Analisar: {{ link }}

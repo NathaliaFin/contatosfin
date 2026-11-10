@@ -79,7 +79,7 @@ with app.app_context():
     form = {
         "nome": helena.nome, "cargo": "Presidente", "empresa": helena.empresa.nome,
         "email": helena.email, "celular": "11 9 1234-5678", "telefone_comercial": "",
-        "endereco_comercial": "", "secretaria_nome": helena.secretaria_nome,
+        "endereco_comercial": helena.endereco_comercial or "", "secretaria_nome": helena.secretaria_nome,
         "secretaria_email": helena.secretaria_email, "secretaria_celular": helena.secretaria_celular,
         "inicio_mandato": helena.inicio_mandato, "horario_trabalho": helena.horario_trabalho,
         "ramal": helena.ramal, "preferencias": helena.preferencias, "observacoes": "",
@@ -143,11 +143,11 @@ with app.app_context():
     entrar(cli, "usuario@fin.org.br")
     r = cli.post("/contatos/solicitar-inclusao", data={"nome": "Contato Sugerido", "empresa": "nova entidade TESTE", "comentario": "Conheci no evento"})
     ok(r.status_code == 302, "usuario sugere novo contato")
-    inc = Solicitacao.query.filter_by(tipo=c.TIPO_INCLUSAO).first()
+    inc = Solicitacao.query.filter_by(tipo=c.TIPO_INCLUSAO).order_by(Solicitacao.id.desc()).first()
     ok(Contato.query.filter_by(nome="Contato Sugerido").count() == 0, "contato sugerido ainda NAO entra no fichario")
     alvo = Contato.query.filter_by(nome="Otávio Martins Leal").first()
     cli.post(f"/contatos/{alvo.id}/solicitar-exclusao", data={"comentario": "Não atua mais"})
-    exc = Solicitacao.query.filter_by(tipo=c.TIPO_EXCLUSAO).first()
+    exc = Solicitacao.query.filter_by(tipo=c.TIPO_EXCLUSAO).order_by(Solicitacao.id.desc()).first()
     entrar(cli, "gestor@fin.org.br")
     cli.post(f"/solicitacoes/{inc.id}/aprovar")
     novo = Contato.query.filter_by(nome="Contato Sugerido").first()
@@ -187,6 +187,27 @@ with app.app_context():
     r = cli.post("/contatos/novo", data={"nome": "Teste Foto", "foto": (io.BytesIO(b"nao sou imagem"), "x.jpg")},
                  content_type="multipart/form-data")
     ok(r.status_code == 400 and "não é uma imagem".encode() in r.data, "arquivo falso recusado")
+
+    print("\n[10] Demonstracao: criar e remover sem tocar no resto")
+    from app.models import Usuario
+    from app.services import contatos as servico
+    from app.services import demo
+    antes = {"contatos": Contato.query.count(), "pedidos": Solicitacao.query.count(),
+             "empresas": Empresa.query.count(), "usuarios": Usuario.query.count(), "historico": Historico.query.count()}
+    r = demo.criar()
+    ok(r["fichas"] == 22 and r["pedidos"] == 4 and demo.existe(), "demo cria 22 fichas e 4 pedidos")
+    # um gestor real aprova a inclusao ficticia: a ficha nova sai em nome dele
+    gestor_real = Usuario.query.filter_by(email="gestor@fin.org.br").first()
+    pedido = Solicitacao.query.join(Usuario, Solicitacao.solicitante_id == Usuario.id).filter(
+        Usuario.email == demo.EMAIL_USUARIO, Solicitacao.tipo == c.TIPO_INCLUSAO).first()
+    servico.aprovar(pedido, gestor_real)
+    db.session.commit()
+    r = demo.remover()
+    depois = {"contatos": Contato.query.count(), "pedidos": Solicitacao.query.count(),
+              "empresas": Empresa.query.count(), "usuarios": Usuario.query.count(), "historico": Historico.query.count()}
+    ok(r["fichas"] == 23, "remocao apaga as 22 fichas + a incluida a partir do pedido ficticio")
+    ok(antes == depois, f"banco volta exatamente ao estado anterior ({antes} == {depois})")
+    ok(not demo.existe(), "demo nao existe mais")
 
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

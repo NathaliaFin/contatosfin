@@ -865,14 +865,110 @@ textarea.entrada:focus { background-color: rgba(0, 40, 230, .03); }
 .paginacao .atual { background: var(--klein); border-color: var(--klein); color: #fff; }
 
 /* --- Login ------------------------------------------------------------------ */
-.tela-login .pagina { display: flex; align-items: center; justify-content: center; padding-top: 48px; }
-.ficha--login { width: 100%; max-width: 460px; padding: 56px 44px 36px 84px; text-align: left; }
-.ficha--login .marca-login { width: 190px; margin-bottom: 34px; }
-.ficha--login h1 { font-size: 30px; font-weight: 700; margin-top: 6px; }
-.ficha--login .apoio { margin-top: 8px; color: var(--texto-2); font-size: 14px; }
+/* Painel institucional em Cobalto, faixas retro na paleta complementar Fin
+   e a folha de fichario a direita, com folhas empilhadas atras. */
+body.tela-login { background: var(--cobalto); background-image: none; }
+.tela-login .pagina { max-width: none; padding: 0; }
+.tela-login .rodape, .tela-login .recados { display: none; }
+.login {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 580px);
+  align-items: center;
+  gap: clamp(32px, 6vw, 110px);
+  padding: 48px clamp(24px, 7vw, 120px);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 620px at 8% 0%, rgba(0, 40, 230, .9) 0%, rgba(0, 40, 230, 0) 70%),
+    radial-gradient(700px 520px at 100% 100%, rgba(92, 71, 255, .35) 0%, rgba(92, 71, 255, 0) 70%),
+    linear-gradient(160deg, #0000A0 0%, #00008A 55%, #000070 100%);
+}
+/* pauta fina, como papel de fichario visto de longe */
+.login::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, .045) 0 1px, transparent 1px 44px);
+}
+/* faixas retro (paleta complementar Fin) */
+.login::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -12%;
+  bottom: 9%;
+  width: 78%;
+  height: 112px;
+  transform: rotate(-9deg);
+  transform-origin: left center;
+  background: linear-gradient(to bottom,
+    var(--ciano) 0 16px, transparent 16px 28px,
+    var(--azul-medio, #0080FF) 28px 44px, transparent 44px 56px,
+    var(--indigo) 56px 72px, transparent 72px 84px,
+    var(--magenta) 84px 100px, transparent 100px);
+  opacity: .92;
+}
+.login__marca {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  color: #fff;
+  min-width: 0;
+}
+.login__logo { width: clamp(150px, 15vw, 210px); height: auto; }
+.login__chamada { max-width: 560px; margin-bottom: 12vh; }
+.login__sobretitulo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--ciano);
+}
+.login__titulo {
+  margin-top: 10px;
+  color: #fff;
+  font-size: clamp(52px, 7vw, 104px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: .95;
+}
+.login__texto { margin-top: 22px; max-width: 460px; font-size: 17px; line-height: 1.6; color: rgba(255, 255, 255, .8); }
+.login__rodape { font-size: 11px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+
+/* folhas empilhadas atras da ficha */
+.login__pilha { position: relative; width: 100%; }
+.login__pilha::before, .login__pilha::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--raio);
+  background: #fff;
+}
+.login__pilha::before { transform: rotate(-4deg) translate(-16px, 10px); background: #C9D2FF; opacity: .55; }
+.login__pilha::after { transform: rotate(2.4deg) translate(10px, 6px); background: #E6EAFF; opacity: .8; }
+.ficha--login {
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 64px 56px 44px 104px;
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 40, .65);
+}
+/* furos mostram o azul do fundo, como num papel furado de verdade */
+.ficha--login::before { background-image: radial-gradient(circle at 13px 13px, #000088 0 8.5px, var(--linha-forte) 9px 10px, transparent 10.5px); }
+.ficha--login .sobretitulo { margin-top: 26px; }
+.ficha--login__titulo { margin-top: 8px; font-size: 30px; font-weight: 700; }
+.ficha--login .apoio { margin-top: 8px; color: var(--texto-2); font-size: 15px; }
+.ficha--login .ficha__etiqueta strong { font-size: 20px; letter-spacing: .14em; }
+.ficha--login .recado { margin-top: 20px; box-shadow: none; }
 .botao-microsoft {
   display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; height: 50px; margin-top: 30px;
+  width: 100%; height: 52px; margin-top: 28px;
   border: 1.5px solid var(--tinta); border-radius: var(--raio-sm);
   background: var(--tinta); color: #fff;
   font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
@@ -882,11 +978,26 @@ textarea.entrada:focus { background-color: rgba(0, 40, 230, .03); }
 .botao-microsoft[aria-disabled="true"] { background: var(--papel-2); color: var(--texto-3); border-color: var(--linha); cursor: not-allowed; }
 .logo-ms { display: grid; grid-template-columns: 9px 9px; gap: 2px; }
 .logo-ms i { width: 9px; height: 9px; }
-.cadeado { margin-top: 22px; border-top: 1px dashed var(--linha-forte); padding-top: 14px; }
+.cadeado { margin-top: 24px; border-top: 1px dashed var(--linha-forte); padding-top: 16px; }
 .cadeado > summary { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-3); cursor: pointer; list-style: none; }
 .cadeado > summary::-webkit-details-marker { display: none; }
-.cadeado form { display: grid; gap: 14px; margin-top: 16px; }
-.cadeado .campo-caixa { width: 100%; }
+.cadeado form { display: grid; gap: 16px; margin-top: 18px; }
+.cadeado .campo-caixa { width: 100%; height: 46px; }
+.cadeado .botao { height: 48px; }
+
+@media (max-width: 980px) {
+  .login { grid-template-columns: 1fr; align-items: start; gap: 36px; padding: 32px 20px 56px; }
+  .login__marca { gap: 24px; }
+  .login__chamada { margin-bottom: 0; }
+  .login__titulo { font-size: 52px; }
+  .login__texto { font-size: 15px; margin-top: 14px; }
+  .login__rodape { display: none; }
+  .login::after { left: 0; top: 0; bottom: auto; width: 100%; height: 6px; transform: none; opacity: 1;
+    background: linear-gradient(to right, var(--ciano) 0 25%, #0080FF 25% 50%, var(--indigo) 50% 75%, var(--magenta) 75%); }
+  .ficha--login { padding: 56px 24px 30px 56px; }
+  .login__pilha::before { transform: rotate(-3deg) translate(-8px, 8px); }
+  .login__pilha::after { transform: rotate(1.6deg) translate(6px, 4px); }
+}
 
 /* --- Pagina de erro --------------------------------------------------------- */
 .ficha--erro { max-width: 560px; text-align: left; }
@@ -930,7 +1041,6 @@ textarea.entrada:focus { background-color: rgba(0, 40, 230, .03); }
   .campos { grid-template-columns: 1fr; }
   .campo, .campo--terco, .campo--quarto { grid-column: 1 / -1; }
   .ficha__acoes-form { margin: 26px -18px -26px -46px; padding: 14px 18px; }
-  .ficha--login { padding: 40px 22px 28px 50px; }
   .fichario { grid-template-columns: 1fr; }
 }
 
@@ -940,4 +1050,10 @@ textarea.entrada:focus { background-color: rgba(0, 40, 230, .03); }
   .topo, .rodape, .barra-acoes, .painel, .recados, .carimbo--grande { display: none !important; }
   .pagina { padding: 0; }
   .ficha { box-shadow: none; border-color: #999; }
+}
+
+/* Login no celular (depois das regras gerais da ficha, para prevalecer) */
+@media (max-width: 720px) {
+  .ficha--login { padding: 52px 20px 28px 50px; }
+  .ficha--login::before { background-image: radial-gradient(circle at 11px 11px, #000088 0 6.5px, var(--linha-forte) 7px 8px, transparent 8.5px); }
 }

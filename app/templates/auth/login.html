@@ -3,39 +3,56 @@
 {% block titulo %}Entrar{% endblock %}
 {% block classe_body %}tela-login{% endblock %}
 {% block conteudo %}
-<section class="ficha ficha--login">
-  <img class="marca-login" src="{{ url_for('static', filename='img/marca/fin_dec_ver_cor_rgb_pos-recorte.png') }}" alt="Fin — Confederação Nacional das Instituições Financeiras">
-  <p class="sobretitulo">Sistema de</p>
-  <h1>Contatos</h1>
-  <p class="apoio">Fichário institucional de contatos da Fin.</p>
+<div class="login">
+  <section class="login__marca" aria-label="Sistema Contatos">
+    <img class="login__logo" src="{{ url_for('static', filename='img/marca/fin_dec_hor_cor_rgb_neg-recorte.png') }}" alt="Fin — Confederação Nacional das Instituições Financeiras">
+    <div class="login__chamada">
+      <p class="login__sobretitulo">Sistema de</p>
+      <h1 class="login__titulo">Contatos</h1>
+      <p class="login__texto">O fichário institucional da Fin: dirigentes, entidades e grupos de relacionamento, organizados e sempre atualizados.</p>
+    </div>
+    <p class="login__rodape">Confederação Nacional das Instituições Financeiras</p>
+  </section>
 
-  {% if sso_disponivel %}
-  <a class="botao-microsoft" href="{{ url_for('auth.sso_entrar', next=request.args.get('next')) }}">
-    <span class="logo-ms" aria-hidden="true"><i style="background:#F25022"></i><i style="background:#7FBA00"></i><i style="background:#00A4EF"></i><i style="background:#FFB900"></i></span>
-    Entrar com a conta Microsoft
-  </a>
-  {% else %}
-  <span class="botao-microsoft" aria-disabled="true" title="A entrada pela Microsoft ainda não foi configurada">
-    <span class="logo-ms" aria-hidden="true"><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i></span>
-    Conta Microsoft — em breve
-  </span>
-  {% endif %}
+  <div class="login__pilha">
+    <section class="ficha ficha--login">
+      <div class="ficha__etiqueta"><span>Fichário</span><strong>Fin</strong></div>
+      <p class="sobretitulo">Acesso restrito</p>
+      <h2 class="ficha--login__titulo">Entrar no sistema</h2>
+      <p class="apoio">Use a sua conta Microsoft da Fin.</p>
+      {% for categoria, texto in get_flashed_messages(with_categories=true) %}
+      <div class="recado recado--{{ categoria }}" role="status">{{ texto }}</div>
+      {% endfor %}
 
-  <details class="cadeado" {% if abrir_cadeado or not sso_disponivel %}open{% endif %}>
-    <summary>{{ icone('cadeado', 'icone--p') }} Entrar com e-mail e senha</summary>
-    <form method="post" novalidate>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div>
-        <label class="rotulo-pequeno" for="email">E-mail</label>
-        <input class="campo-caixa" id="email" name="email" type="email" value="{{ email }}" autocomplete="username" required>
-      </div>
-      <div>
-        <label class="rotulo-pequeno" for="senha">Senha</label>
-        <input class="campo-caixa" id="senha" name="senha" type="password" autocomplete="current-password" required>
-      </div>
-      <label class="marcador"><input type="checkbox" name="lembrar" value="1"> Manter conectado neste computador</label>
-      <button class="botao" type="submit">Entrar</button>
-    </form>
-  </details>
-</section>
+      {% if sso_disponivel %}
+      <a class="botao-microsoft" href="{{ url_for('auth.sso_entrar', next=request.args.get('next')) }}">
+        <span class="logo-ms" aria-hidden="true"><i style="background:#F25022"></i><i style="background:#7FBA00"></i><i style="background:#00A4EF"></i><i style="background:#FFB900"></i></span>
+        Entrar com a conta Microsoft
+      </a>
+      {% else %}
+      <span class="botao-microsoft" aria-disabled="true" title="A entrada pela Microsoft ainda não foi configurada">
+        <span class="logo-ms" aria-hidden="true"><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i><i style="background:#c9ccd3"></i></span>
+        Conta Microsoft — em breve
+      </span>
+      {% endif %}
+
+      <details class="cadeado" {% if abrir_cadeado or not sso_disponivel %}open{% endif %}>
+        <summary>{{ icone('cadeado', 'icone--p') }} Entrar com e-mail e senha</summary>
+        <form method="post" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div>
+            <label class="rotulo-pequeno" for="email">E-mail</label>
+            <input class="campo-caixa" id="email" name="email" type="email" value="{{ email }}" autocomplete="username" required>
+          </div>
+          <div>
+            <label class="rotulo-pequeno" for="senha">Senha</label>
+            <input class="campo-caixa" id="senha" name="senha" type="password" autocomplete="current-password" required>
+          </div>
+          <label class="marcador"><input type="checkbox" name="lembrar" value="1"> Manter conectado neste computador</label>
+          <button class="botao" type="submit">Entrar</button>
+        </form>
+      </details>
+    </section>
+  </div>
+</div>
 {% endblock %}

@@ -193,6 +193,32 @@ def _registrar_comandos(app: Flask) -> None:
         resumo = servico_seed.semear_tudo()
         click.secho(f"Grupos novos: {resumo['grupos']} | Administrador: {resumo['admin']}", fg="green")
 
+    @app.cli.command("demo")
+    @click.option("--remover", is_flag=True, help="Apaga tudo o que a demonstracao criou.")
+    @click.option("--sim", is_flag=True, help="Nao pede confirmacao ao remover.")
+    def demo(remover, sim):
+        """Cria (ou remove) fichas FICTICIAS de demonstracao."""
+        from app.services import demo as servico_demo
+
+        if remover:
+            if not sim:
+                click.confirm("Apagar todas as fichas, pedidos e empresas da demonstracao?", abort=True)
+            r = servico_demo.remover()
+            click.secho(
+                f"Removidos: {r['fichas']} ficha(s), {r['pedidos']} pedido(s), {r['empresas']} empresa(s).",
+                fg="green",
+            )
+            return
+        if servico_demo.existe():
+            click.secho("A demonstracao ja existe. Use --remover antes de criar de novo.", fg="yellow")
+            return
+        r = servico_demo.criar()
+        click.secho(
+            f"Criadas {r['fichas']} fichas ficticias e {r['pedidos']} pedidos pendentes. "
+            "Para apagar: flask demo --remover",
+            fg="green",
+        )
+
     @app.cli.command("criar-usuario")
     @click.option("--nome", prompt=True)
     @click.option("--email", prompt=True)

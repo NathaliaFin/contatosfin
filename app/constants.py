@@ -44,7 +44,7 @@ SECOES = {
 CAMPOS: tuple[Campo, ...] = (
     Campo("nome", "Nome", "dados", largura="inteira"),
     Campo("cargo", "Cargo", "dados"),
-    Campo("empresa", "Empresa", "dados", tipo="empresa"),
+    Campo("empresa", "Organização", "dados", tipo="empresa"),
     Campo("email", "E-mail", "dados", tipo="email", tamanho=254),
     Campo("celular", "Celular", "dados", tipo="telefone", tamanho=40, largura="quarto"),
     Campo("telefone_comercial", "Telefone comercial", "dados", tipo="telefone", tamanho=40, largura="quarto"),

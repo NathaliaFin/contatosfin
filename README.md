@@ -24,8 +24,8 @@ Os scripts de uso diário (publicar, testar o banco, ver o log) estão em
 
 - Contas Microsoft `@fin.org.br` entram sozinhas com o perfil **Usuário**.
   O administrador promove a gestor em *Usuários*.
-- Qualquer pessoa cadastra **empresas**, a qualquer momento. “ABEL”, “abel” e
-  “Abel” são a mesma empresa (busca e cadastro ignoram maiúsculas e acentos).
+- Qualquer pessoa cadastra **organizações**, a qualquer momento. “ABEL”, “abel” e
+  “Abel” são a mesma organização (busca e cadastro ignoram maiúsculas e acentos).
 - **Listas de trabalho** são mantidas por gestor e administrador.
 
 ## Como funciona a solicitação

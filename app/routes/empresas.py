@@ -1,4 +1,4 @@
-"""Empresas: qualquer pessoa cadastra, a qualquer momento, sem aprovacao.
+"""Organizacoes (no codigo e no banco: Empresa): qualquer pessoa cadastra, a qualquer momento, sem aprovacao.
 
 "ABEL", "abel" e "Abel" sao a mesma empresa: o nome normalizado (sem
 acentos, minusculo) e unico no banco.
@@ -37,14 +37,14 @@ def lista():
     if request.method == "POST":
         nome = limpar(request.form.get("nome"))
         if not nome:
-            flash("Informe o nome da empresa.", "erro")
+            flash("Informe o nome da organização.", "erro")
         else:
             empresa, criada = servico.obter_ou_criar_empresa(nome, current_user)
             db.session.commit()
             if criada:
-                flash(f"Empresa “{empresa.nome}” cadastrada.", "sucesso")
+                flash(f"Organização “{empresa.nome}” cadastrada.", "sucesso")
             else:
-                flash(f"A empresa já existia como “{empresa.nome}”.", "info")
+                flash(f"A organização já existia como “{empresa.nome}”.", "info")
         return redirect(url_for("empresas.lista", q=request.args.get("q", "")))
 
     q = (request.args.get("q") or "").strip()
@@ -74,7 +74,7 @@ def criar():
     dados = request.get_json(silent=True) or {}
     nome = limpar(dados.get("nome"))
     if not nome:
-        return jsonify({"erro": "Informe o nome da empresa."}), 400
+        return jsonify({"erro": "Informe o nome da organização."}), 400
     empresa, criada = servico.obter_ou_criar_empresa(nome[:255], current_user)
     db.session.commit()
     return jsonify({"id": empresa.id, "nome": empresa.nome, "criada": criada})
@@ -90,13 +90,13 @@ def renomear(empresa_id):
         return redirect(url_for("empresas.lista"))
     outra = servico.buscar_empresa(nome)
     if outra and outra.id != empresa.id:
-        flash(f"Já existe a empresa “{outra.nome}”.", "erro")
+        flash(f"Já existe a organização “{outra.nome}”.", "erro")
         return redirect(url_for("empresas.lista"))
     empresa.definir_nome(nome[:255])
     for contato in empresa.contatos:
         servico.atualizar_busca(contato)
     db.session.commit()
-    flash("Nome da empresa atualizado.", "sucesso")
+    flash("Nome da organização atualizado.", "sucesso")
     return redirect(url_for("empresas.lista"))
 
 
@@ -112,5 +112,5 @@ def excluir(empresa_id):
         contato.empresa = None
     db.session.delete(empresa)
     db.session.commit()
-    flash("Empresa excluída.", "sucesso")
+    flash("Organização excluída.", "sucesso")
     return redirect(url_for("empresas.lista"))

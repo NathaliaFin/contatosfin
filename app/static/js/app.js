@@ -9,7 +9,7 @@
   }
 
   /* ---------------------------------------------------------------------
-     Empresa: busca enquanto digita; se nao existir, cadastra na hora.
+     Organizacao (campo "empresa"): busca enquanto digita; se nao existir, cadastra na hora.
      "ABEL" e "abel" sao a mesma empresa (o servidor confere de novo).
      --------------------------------------------------------------------- */
   document.querySelectorAll("[data-empresa]").forEach(function (caixa) {
@@ -48,7 +48,7 @@
           if (dados.erro) { alert(dados.erro); return; }
           escolher(dados.nome);
         })
-        .catch(function () { alert("Não foi possível cadastrar a empresa agora."); });
+        .catch(function () { alert("Não foi possível cadastrar a organização agora."); });
     }
 
     function desenhar(termo) {
@@ -67,7 +67,7 @@
         nova.className = "sugestoes__nova";
         nova.setAttribute("role", "option");
         nova.dataset.acao = "cadastrar";
-        nova.textContent = "+ Cadastrar “" + termo.trim() + "” como nova empresa";
+        nova.textContent = "+ Cadastrar “" + termo.trim() + "” como nova organização";
         nova.addEventListener("mousedown", function (ev) { ev.preventDefault(); cadastrar(termo.trim()); });
         lista.appendChild(nova);
       }
@@ -185,6 +185,49 @@
     if (ev.key === "Escape") {
       document.querySelectorAll("details.menu[open]").forEach(function (m) { m.removeAttribute("open"); });
     }
+  });
+
+  /* ---------------------------------------------------------------------
+     Busca ao vivo na pagina de contatos: os resultados mudam enquanto se
+     digita, sem recarregar. O servidor continua fazendo a busca; aqui so
+     trocamos a area de resultados, a contagem e o indice A-Z.
+     --------------------------------------------------------------------- */
+  document.querySelectorAll("[data-busca-viva]").forEach(function (form) {
+    var campo = form.querySelector('input[name="q"]');
+    var temporizador = null;
+    var pedido = 0;
+
+    function atualizar() {
+      var parametros = new URLSearchParams(new FormData(form));
+      parametros.delete("letra");          // busca nova vale para todas as letras
+      if (!parametros.get("q")) parametros.delete("q");
+      var url = form.action.split("?")[0] + (parametros.toString() ? "?" + parametros : "");
+      var meu = ++pedido;
+      form.classList.add("carregando");
+      fetch(url, { headers: { "X-Requested-With": "fetch" } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          if (meu !== pedido) return;      // chegou uma resposta mais nova
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          ["[data-resultados]", "[data-contagem]", ".trilho", ".chips"].forEach(function (seletor) {
+            var novo = doc.querySelector(seletor), atual = document.querySelector(seletor);
+            if (novo && atual) atual.innerHTML = novo.innerHTML;
+          });
+          var letra = form.querySelector('input[name="letra"]');
+          if (letra) letra.remove();
+          history.replaceState(null, "", url);
+        })
+        .catch(function () { form.submit(); })
+        .finally(function () { if (meu === pedido) form.classList.remove("carregando"); });
+    }
+
+    campo.addEventListener("input", function () {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(atualizar, 280);
+    });
+    form.addEventListener("submit", function (ev) { ev.preventDefault(); clearTimeout(temporizador); atualizar(); });
+    // Cursor no fim do texto ao voltar para a pagina com uma busca feita.
+    if (campo.value) { var n = campo.value.length; campo.setSelectionRange(n, n); }
   });
 
   /* Evita envio duplo do formulario da ficha. */

@@ -1,34 +1,34 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icone %}
-{% block titulo %}Empresas{% endblock %}
+{% block titulo %}Organizações{% endblock %}
 {% block classe_pagina %}pagina--estreita{% endblock %}
 {% block conteudo %}
 <div class="cabecalho">
   <div>
     <p class="sobretitulo">Cadastro</p>
-    <h1>Empresas</h1>
-    <p class="cabecalho__apoio">Qualquer pessoa pode cadastrar. “ABEL”, “abel” e “Abel” são reconhecidas como a mesma empresa.</p>
+    <h1>Organizações</h1>
+    <p class="cabecalho__apoio">Qualquer pessoa pode cadastrar. “ABEL”, “abel” e “Abel” são reconhecidas como a mesma organização.</p>
   </div>
 </div>
 
 <section class="painel" style="margin:0 0 26px;max-width:none">
-  <h2>Cadastrar empresa</h2>
+  <h2>Cadastrar organização</h2>
   <form class="form-linha" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input class="campo-caixa" name="nome" maxlength="255" placeholder="Nome da empresa ou entidade" required aria-label="Nome da empresa">
+    <input class="campo-caixa" name="nome" maxlength="255" placeholder="Nome da organização ou entidade" required aria-label="Nome da organização">
     <button class="botao" type="submit">{{ icone('mais', 'icone--p') }} Cadastrar</button>
   </form>
 </section>
 
 <form class="filtros" method="get" style="grid-template-columns:1fr auto">
-  <div class="busca">{{ icone('busca') }}<input class="campo-caixa" name="q" value="{{ q }}" placeholder="Buscar empresa" aria-label="Buscar empresa"></div>
+  <div class="busca">{{ icone('busca') }}<input class="campo-caixa" name="q" value="{{ q }}" placeholder="Buscar organização" aria-label="Buscar organização"></div>
   <button class="botao" type="submit">Buscar</button>
 </form>
 
 {% if empresas %}
 <div class="tabela-caixa">
   <table class="tabela">
-    <thead><tr><th>Empresa</th><th>Contatos</th><th>Cadastrada</th>{% if current_user.pode_gerir %}<th></th>{% endif %}</tr></thead>
+    <thead><tr><th>Organização</th><th>Contatos</th><th>Cadastrada</th>{% if current_user.pode_gerir %}<th></th>{% endif %}</tr></thead>
     <tbody>
     {% for e in empresas %}
       {% set n = contagem.get(e.id, 0) %}
@@ -46,7 +46,7 @@
               <button class="botao botao--pequeno" type="submit">Salvar</button>
             </form>
             {% if not n %}
-            <form method="post" action="{{ url_for('empresas.excluir', empresa_id=e.id) }}" data-confirmar="Excluir a empresa {{ e.nome }}?">
+            <form method="post" action="{{ url_for('empresas.excluir', empresa_id=e.id) }}" data-confirmar="Excluir a organização {{ e.nome }}?">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="botao botao--perigo botao--pequeno" type="submit">Excluir</button>
             </form>
@@ -60,6 +60,6 @@
   </table>
 </div>
 {% else %}
-<div class="vazio"><p>{% if q %}Nenhuma empresa encontrada para “{{ q }}”.{% else %}Nenhuma empresa cadastrada ainda.{% endif %}</p></div>
+<div class="vazio"><p>{% if q %}Nenhuma organização encontrada para “{{ q }}”.{% else %}Nenhuma organização cadastrada ainda.{% endif %}</p></div>
 {% endif %}
 {% endblock %}

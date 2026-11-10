@@ -1,96 +1,147 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icone, retrato, selos, paginacao as paginar %}
 {% block titulo %}Contatos{% endblock %}
+{% block classe_body %}tela-contatos{% endblock %}
+
+{% block faixa %}
+<section class="vitrine">
+  <div class="vitrine__interno">
+    <div>
+      <p class="vitrine__sobretitulo">Cadastro institucional</p>
+      <h1 class="vitrine__titulo">Contatos</h1>
+      <p class="vitrine__resumo">
+        <span><strong>{{ resumo.contatos }}</strong> contatos</span>
+        <span><strong>{{ resumo.empresas }}</strong> organizações</span>
+        <span><strong>{{ resumo.listas }}</strong> listas de trabalho</span>
+        {% if resumo.pendentes %}<a class="vitrine__pendentes" href="{{ url_for('contatos.lista', pendentes=1) }}"><strong>{{ resumo.pendentes }}</strong> com alteração pendente</a>{% endif %}
+      </p>
+    </div>
+    <div class="vitrine__acoes">
+      {% if current_user.pode_gerir %}
+      <a class="botao botao--claro" href="{{ url_for('contatos.novo') }}">{{ icone('mais') }} Nova ficha</a>
+      {% else %}
+      <a class="botao botao--claro" href="{{ url_for('contatos.solicitar_inclusao') }}">{{ icone('mais') }} Sugerir novo contato</a>
+      {% endif %}
+    </div>
+
+    <form class="busca-grande" method="get" role="search" data-busca-viva>
+      {{ icone('busca') }}
+      <label class="so-leitor" for="q">Buscar contatos</label>
+      <input id="q" name="q" value="{{ filtros.q }}" placeholder="Busque por nome, cargo, organização, e-mail ou telefone" autocomplete="off" autofocus>
+      {% if filtros.grupo %}<input type="hidden" name="grupo" value="{{ filtros.grupo }}">{% endif %}
+      {% if filtros.empresa %}<input type="hidden" name="empresa" value="{{ filtros.empresa }}">{% endif %}
+      {% if filtros.letra %}<input type="hidden" name="letra" value="{{ filtros.letra }}">{% endif %}
+      {% if filtros.pendentes %}<input type="hidden" name="pendentes" value="1">{% endif %}
+      {% if filtros.modo == 'lista' %}<input type="hidden" name="modo" value="lista">{% endif %}
+      <span class="busca-grande__carregando" aria-hidden="true"></span>
+      <button class="botao" type="submit">Buscar</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
 {% block conteudo %}
-{% set base = {'q': filtros.q or None, 'grupo': filtros.grupo, 'empresa': filtros.empresa, 'pendentes': 1 if filtros.pendentes else None} %}
-
-<div class="cabecalho">
-  <div>
-    <p class="sobretitulo">Cadastro</p>
-    <h1>Contatos</h1>
-    <p class="cabecalho__apoio">
-      {% if total == 0 %}Nenhuma ficha encontrada{% elif total == 1 %}1 ficha{% else %}{{ total }} fichas{% endif %}{% if filtros.letra %} · letra {{ filtros.letra }}: {{ contagem.get(filtros.letra, 0) }}{% endif %}
-    </p>
-  </div>
-  <div class="cabecalho__acoes">
+{% set base = {'q': filtros.q or None, 'grupo': filtros.grupo, 'empresa': filtros.empresa, 'pendentes': 1 if filtros.pendentes else None, 'modo': 'lista' if filtros.modo == 'lista' else None} %}
+<div class="barra-filtros">
+  <div class="chips" role="group" aria-label="Filtrar por lista de trabalho">
+    <a class="chip{% if not filtros.grupo %} chip--ativo{% endif %}" href="{{ url_for('contatos.lista', **dict(base, grupo=None)) }}">Todas as listas</a>
+    {% for g in grupos %}
+    <a class="chip{% if g.id == filtros.grupo %} chip--ativo{% endif %}" href="{{ url_for('contatos.lista', **dict(base, grupo=None if g.id == filtros.grupo else g.id)) }}">{{ g.nome }}</a>
+    {% endfor %}
     {% if current_user.pode_gerir %}
-    <a class="botao" href="{{ url_for('contatos.novo') }}">{{ icone('mais') }} Nova ficha</a>
-    {% else %}
-    <a class="botao botao--contorno" href="{{ url_for('contatos.solicitar_inclusao') }}">{{ icone('mais') }} Sugerir novo contato</a>
-    {% endif %}
-  </div>
-</div>
-
-<form class="filtros" method="get" role="search">
-  <div class="busca">
-    <label class="so-leitor" for="q">Buscar</label>
-    {{ icone('busca') }}
-    <input class="campo-caixa" id="q" name="q" value="{{ filtros.q }}" placeholder="Nome, cargo, empresa, e-mail ou telefone" autofocus>
-  </div>
-  <div>
-    <label class="so-leitor" for="grupo">Lista de trabalho</label>
-    <select class="selecao" id="grupo" name="grupo">
-      <option value="">Todas as listas</option>
-      {% for g in grupos %}<option value="{{ g.id }}" {% if g.id == filtros.grupo %}selected{% endif %}>{{ g.nome }}</option>{% endfor %}
-    </select>
-  </div>
-  {% if filtros.empresa %}<input type="hidden" name="empresa" value="{{ filtros.empresa }}">{% endif %}
-  {% if filtros.letra %}<input type="hidden" name="letra" value="{{ filtros.letra }}">{% endif %}
-  <button class="botao" type="submit">{{ icone('busca') }} Buscar</button>
-  <a class="botao botao--fantasma" href="{{ url_for('contatos.lista') }}">Limpar</a>
-  {% if current_user.pode_gerir or empresa_filtro %}
-  <div class="filtros__extra">
-    {% if current_user.pode_gerir %}
-    <label class="marcador"><input type="checkbox" name="pendentes" value="1" {% if filtros.pendentes %}checked{% endif %} onchange="this.form.submit()"> Só fichas com alteração pendente</label>
+    <a class="chip chip--pendente{% if filtros.pendentes %} chip--ativo{% endif %}" href="{{ url_for('contatos.lista', **dict(base, pendentes=None if filtros.pendentes else 1)) }}">Alteração pendente</a>
     {% endif %}
     {% if empresa_filtro %}
-    <span class="filtro-ativo">{{ icone('predio', 'icone--p') }} {{ empresa_filtro.nome }}
-      <a href="{{ url_for('contatos.lista', **dict(base, empresa=None)) }}" aria-label="Remover filtro de empresa">{{ icone('x', 'icone--p') }}</a></span>
+    <a class="chip chip--ativo" href="{{ url_for('contatos.lista', **dict(base, empresa=None)) }}" title="Remover filtro">{{ icone('predio', 'icone--p') }} {{ empresa_filtro.nome }} {{ icone('x', 'icone--p') }}</a>
     {% endif %}
   </div>
-  {% endif %}
-</form>
-
-<nav class="indice" aria-label="Índice alfabético">
-  <a class="indice__letra indice__letra--todas{% if not filtros.letra %} indice__letra--ativa{% endif %}" href="{{ url_for('contatos.lista', **base) }}">Todas</a>
-  {% for l in letras %}
-  <a class="indice__letra{% if l == filtros.letra %} indice__letra--ativa{% elif not contagem.get(l) %} indice__letra--vazia{% endif %}"
-     href="{{ url_for('contatos.lista', letra=l, **base) }}" {% if not contagem.get(l) %}aria-disabled="true" tabindex="-1"{% endif %}>{{ l }}</a>
-  {% endfor %}
-  {% if contagem.get('#') %}<a class="indice__letra{% if filtros.letra == '#' %} indice__letra--ativa{% endif %}" href="{{ url_for('contatos.lista', letra='#', **base) }}">#</a>{% endif %}
-</nav>
-
-{% if contatos %}
-<div class="fichario">
-  {% for ct in contatos %}
-  <a class="cartao" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">
-    <span class="cartao__aba">{{ ct.letra or '#' }}</span>
-    <span class="cartao__numero">Nº {{ ct.numero }}</span>
-    {% if ct.id in pendentes %}<span class="carimbo">Alteração pendente</span>{% endif %}
-    <div class="cartao__corpo">
-      {{ retrato(ct, 'mini') }}
-      <div>
-        <h2 class="cartao__nome">{{ ct.nome_exibicao }}</h2>
-        {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
-        {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
-      </div>
+  <div class="barra-filtros__direita">
+    <span class="contagem-resultado" data-contagem>{% if total == 0 %}Nenhum resultado{% elif total == 1 %}1 contato{% else %}{{ total }} contatos{% endif %}{% if filtros.letra %} · letra {{ filtros.letra }}{% endif %}</span>
+    <div class="alternador" role="group" aria-label="Formato">
+      <a class="{% if filtros.modo != 'lista' %}ativo{% endif %}" href="{{ url_for('contatos.lista', letra=filtros.letra or None, **dict(base, modo=None)) }}" title="Ver em cartões">
+        <svg class="icone icone--p" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Cartões</a>
+      <a class="{% if filtros.modo == 'lista' %}ativo{% endif %}" href="{{ url_for('contatos.lista', letra=filtros.letra or None, **dict(base, modo='lista')) }}" title="Ver em lista">
+        <svg class="icone icone--p" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> Lista</a>
     </div>
-    {% if ct.email or ct.celular or ct.telefone_comercial or ct.grupos %}
-    <div class="cartao__rodape">
-      {% if ct.email %}<div class="cartao__linha">{{ icone('email', 'icone--p') }}<span>{{ ct.email }}</span></div>{% endif %}
-      {% if ct.celular or ct.telefone_comercial %}<div class="cartao__linha">{{ icone('celular' if ct.celular else 'telefone', 'icone--p') }}<span>{{ ct.celular or ct.telefone_comercial }}</span></div>{% endif %}
-      {{ selos(ct.grupos) }}
+  </div>
+</div>
+
+<div class="layout-contatos">
+  <div id="resultados" data-resultados>
+  {% if contatos %}
+    {% if filtros.modo == 'lista' %}
+    <div class="linhas">
+      {% for ct in contatos %}
+      <a class="linha" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}" style="--i: {{ loop.index0 }}">
+        {{ retrato(ct, 'mini') }}
+        <span class="linha__nome"><strong>{{ ct.nome_exibicao }}</strong><small>{{ ct.cargo or '' }}</small></span>
+        <span class="linha__empresa">{{ ct.empresa.nome if ct.empresa else '' }}</span>
+        <span class="linha__contato">{% if ct.email %}{{ icone('email', 'icone--p') }}<span>{{ ct.email }}</span>{% endif %}</span>
+        <span class="linha__contato">{% if ct.celular or ct.telefone_comercial %}{{ icone('celular' if ct.celular else 'telefone', 'icone--p') }}<span>{{ ct.celular or ct.telefone_comercial }}</span>{% endif %}</span>
+        <span class="linha__fim">{% if ct.id in pendentes %}<span class="situacao situacao--pendente">Pendente</span>{% endif %}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="grupos">
+    {% for grupo_letra in contatos|groupby('letra') %}
+    <section class="grupo-letra" id="letra-{{ grupo_letra.grouper or 'outros' }}" style="--n: {{ [grupo_letra.list|length, 3]|min }}">
+      <header class="divisoria">
+        <span class="divisoria__letra">{{ grupo_letra.grouper or '#' }}</span>
+        <span class="divisoria__linha"></span>
+        <span class="divisoria__conta">{{ grupo_letra.list|length }} {{ 'contato' if grupo_letra.list|length == 1 else 'contatos' }}</span>
+      </header>
+      <div class="fichario">
+        {% for ct in grupo_letra.list %}
+        <a class="cartao" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}" style="--i: {{ loop.index0 }}">
+          <span class="cartao__aba">{{ ct.letra or '#' }}</span>
+          <span class="cartao__numero">Nº {{ ct.numero }}</span>
+          {% if ct.id in pendentes %}<span class="carimbo">Alteração pendente</span>{% endif %}
+          <div class="cartao__corpo">
+            {{ retrato(ct, 'mini') }}
+            <div>
+              <h2 class="cartao__nome">{{ ct.nome_exibicao }}</h2>
+              {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
+              {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
+            </div>
+          </div>
+          {% if ct.email or ct.celular or ct.telefone_comercial or ct.grupos %}
+          <div class="cartao__rodape">
+            {% if ct.email %}<div class="cartao__linha">{{ icone('email', 'icone--p') }}<span>{{ ct.email }}</span></div>{% endif %}
+            {% if ct.celular or ct.telefone_comercial %}<div class="cartao__linha">{{ icone('celular' if ct.celular else 'telefone', 'icone--p') }}<span>{{ ct.celular or ct.telefone_comercial }}</span></div>{% endif %}
+            {{ selos(ct.grupos) }}
+          </div>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
     </div>
     {% endif %}
-  </a>
-  {% endfor %}
+    {{ paginar(paginacao, 'contatos.lista', dict(base, letra=filtros.letra or None)) }}
+  {% else %}
+    <div class="vazio">
+      <h2>Nenhum contato por aqui</h2>
+      <p>{% if filtros.q or filtros.grupo or filtros.empresa or filtros.letra or filtros.pendentes %}Nenhum contato atende aos filtros escolhidos. Tente outra busca ou limpe os filtros.{% else %}Ainda não há contatos cadastrados.{% endif %}</p>
+      {% if current_user.pode_gerir and not filtros.q %}<a class="botao" href="{{ url_for('contatos.novo') }}">{{ icone('mais') }} Cadastrar o primeiro contato</a>{% endif %}
+    </div>
+  {% endif %}
+  </div>
+
+  <nav class="trilho" aria-label="Índice alfabético">
+    <a class="trilho__todas{% if not filtros.letra %} ativa{% endif %}" href="{{ url_for('contatos.lista', **base) }}" title="Todas as letras">A–Z</a>
+    {% for l in letras %}
+      {% if l == filtros.letra %}
+      <a class="ativa" href="{{ url_for('contatos.lista', **base) }}" title="Mostrar todas">{{ l }}</a>
+      {% elif not contagem.get(l) %}
+      <span class="vazia">{{ l }}</span>
+      {% elif l in letras_na_pagina and not filtros.letra and filtros.modo != 'lista' %}
+      <a href="#letra-{{ l }}">{{ l }}</a>
+      {% else %}
+      <a href="{{ url_for('contatos.lista', letra=l, **base) }}">{{ l }}</a>
+      {% endif %}
+    {% endfor %}
+  </nav>
 </div>
-{{ paginar(paginacao, 'contatos.lista', dict(base, letra=filtros.letra or None)) }}
-{% else %}
-<div class="vazio">
-  <h2>Nenhuma ficha por aqui</h2>
-  <p>{% if filtros.q or filtros.grupo or filtros.empresa or filtros.letra or filtros.pendentes %}Nenhum contato atende aos filtros escolhidos. Tente outra busca ou limpe os filtros.{% else %}Ainda não há contatos cadastrados.{% endif %}</p>
-  {% if current_user.pode_gerir %}<a class="botao" href="{{ url_for('contatos.novo') }}">{{ icone('mais') }} Cadastrar a primeira ficha</a>{% endif %}
-</div>
-{% endif %}
 {% endblock %}

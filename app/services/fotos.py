@@ -67,7 +67,9 @@ def salvar_upload(arquivo) -> str | None:
     imagem = ImageOps.fit(imagem, (LARGURA, ALTURA), Image.LANCZOS, centering=(0.5, 0.35))
 
     nome = f"{uuid.uuid4().hex}.jpg"
-    imagem.save(caminho(nome), "JPEG", quality=85, optimize=True)
+    # subsampling=0: cor em resolucao total. O padrao do JPEG reduz a cor pela
+    # metade e deixa blocos visiveis em contornos de cor forte.
+    imagem.save(caminho(nome), "JPEG", quality=92, subsampling=0, optimize=True)
     return nome
 
 

@@ -81,16 +81,46 @@ _CORES_FOTO = [("#0028E6", "#DCE2FD"), ("#0000A0", "#C9D2FF"), ("#5C47FF", "#E6E
 
 
 def _foto_ilustrativa(indice: int) -> FileStorage:
-    """Silhueta 3x4 nas cores da Fin (nao e foto de ninguem)."""
+    """Silhueta 3x4 nas cores da Fin (nao e foto de ninguem).
+
+    Desenhada em 4x o tamanho final e reduzida com filtro LANCZOS: e o que
+    deixa as bordas lisas, sem o serrilhado do desenho direto.
+    """
     frente, fundo = _CORES_FOTO[indice % len(_CORES_FOTO)]
-    img = Image.new("RGB", (450, 600), fundo)
+    k = 4
+    img = Image.new("RGB", (450 * k, 600 * k), fundo)
     d = ImageDraw.Draw(img)
-    d.ellipse((150, 120, 300, 290), fill=frente)          # cabeca
-    d.rounded_rectangle((70, 330, 380, 680), radius=150, fill=frente)  # ombros
+    d.ellipse((152 * k, 118 * k, 298 * k, 286 * k), fill=frente)                 # cabeca
+    d.rounded_rectangle((62 * k, 320 * k, 388 * k, 700 * k), radius=160 * k, fill=frente)  # ombros
+    img = img.resize((450, 600), Image.LANCZOS)
     arquivo = io.BytesIO()
     img.save(arquivo, "PNG")
     arquivo.seek(0)
     return FileStorage(stream=arquivo, filename="demo.png", content_type="image/png")
+
+
+def refazer_fotos() -> int:
+    """Redesenha as silhuetas das fichas ficticias cuja foto ninguem trocou."""
+    gestor = Usuario.query.filter_by(email=EMAIL_GESTOR).first()
+    if gestor is None:
+        return 0
+    indices = {f["nome"]: i for i, f in enumerate(FICHAS) if f.get("foto")}
+    refeitas = 0
+    for ct in Contato.query.filter_by(criado_por_id=gestor.id).filter(Contato.foto.isnot(None)):
+        if ct.nome not in indices:
+            continue
+        trocada = any(
+            "foto" in (h.mudancas or {})
+            for h in Historico.query.filter_by(contato_id=ct.id, acao=c.ACAO_ALTERACAO)
+        )
+        if trocada:
+            continue  # alguem enviou outra foto: nao mexe
+        nova = fotos.salvar_upload(_foto_ilustrativa(indices[ct.nome]))
+        fotos.apagar(ct.foto)
+        ct.foto = nova
+        refeitas += 1
+    db.session.commit()
+    return refeitas
 
 
 def _usuario(email: str, nome: str, perfil: str) -> Usuario:

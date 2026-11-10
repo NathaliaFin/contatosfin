@@ -196,10 +196,14 @@ def _registrar_comandos(app: Flask) -> None:
     @app.cli.command("demo")
     @click.option("--remover", is_flag=True, help="Apaga tudo o que a demonstracao criou.")
     @click.option("--sim", is_flag=True, help="Nao pede confirmacao ao remover.")
-    def demo(remover, sim):
+    @click.option("--refazer-fotos", is_flag=True, help="Redesenha as silhuetas que ninguem trocou.")
+    def demo(remover, sim, refazer_fotos):
         """Cria (ou remove) fichas FICTICIAS de demonstracao."""
         from app.services import demo as servico_demo
 
+        if refazer_fotos:
+            click.secho(f"Fotos ficticias redesenhadas: {servico_demo.refazer_fotos()}", fg="green")
+            return
         if remover:
             if not sim:
                 click.confirm("Apagar todas as fichas, pedidos e empresas da demonstracao?", abort=True)

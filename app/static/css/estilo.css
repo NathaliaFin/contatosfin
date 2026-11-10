@@ -383,7 +383,7 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
   letter-spacing: .14em;
 }
 .cartao:nth-child(even) .cartao__aba { background: var(--cobalto); }
-.cartao__corpo { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 16px; padding: 18px 18px 14px; }
+.cartao__corpo { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 16px; padding: 18px 18px 14px; }
 .cartao__nome { font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--tinta); padding-right: 8px; }
 .cartao__cargo { margin-top: 4px; font-size: 13px; color: var(--texto-2); }
 .cartao__empresa { margin-top: 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--klein); }
@@ -464,8 +464,9 @@ a.selo:hover { background: var(--cor); color: #fff; text-decoration: none; }
 }
 .retrato__iniciais { font-weight: 300; letter-spacing: .04em; line-height: 1; }
 .retrato__legenda { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--texto-3); }
-.retrato--mini { width: 66px; height: 88px; padding: 3px; }
-.retrato--mini .retrato__iniciais { font-size: 22px; }
+.retrato--mini { width: 84px; height: 100px; padding: 3px; }
+.retrato--mini img { object-position: center 30%; }
+.retrato--mini .retrato__iniciais { font-size: 26px; }
 .retrato--grande { width: 156px; height: 208px; padding: 6px; transform: rotate(1.6deg); }
 .retrato--grande .retrato__iniciais { font-size: 46px; }
 .retrato--grande::before {

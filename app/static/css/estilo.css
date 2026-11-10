@@ -324,7 +324,7 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
   gap: 3px;
   padding: 0 4px;
   border-bottom: 3px solid var(--klein);
-  margin-bottom: 30px;
+  margin-bottom: 50px;
 }
 .indice__letra {
   min-width: 32px;
@@ -349,7 +349,7 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
 .indice__letra--todas { padding: 0 14px; letter-spacing: .14em; text-transform: uppercase; font-size: 11px; }
 
 /* --- Cartao (ficha resumida no fichario) ---------------------------------- */
-.fichario { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 34px 22px; }
+.fichario { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 50px 30px; }
 .cartao {
   position: relative;
   display: flex;

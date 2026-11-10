@@ -15,8 +15,7 @@ from app.services.texto import normalizar
 
 bp = Blueprint("contatos", __name__)
 
-#: Fichas por pagina em cada formato (cartoes ocupam mais espaco).
-POR_PAGINA_MODO = {"cartoes": 48, "lista": 100}
+POR_PAGINA = 24
 LETRAS = [chr(x) for x in range(ord("A"), ord("Z") + 1)]
 
 
@@ -89,9 +88,8 @@ def lista():
     if letra:
         consulta = consulta.filter(Contato.letra == letra)
 
-    modo = "lista" if request.args.get("modo") == "lista" else "cartoes"
     paginacao = consulta.order_by(Contato.busca, Contato.id).paginate(
-        page=pagina, per_page=POR_PAGINA_MODO[modo], error_out=False
+        page=pagina, per_page=POR_PAGINA, error_out=False
     )
     pendentes = servico.ids_com_pendencia(item.id for item in paginacao.items)
 
@@ -102,19 +100,10 @@ def lista():
         pendentes=pendentes,
         letras=LETRAS,
         contagem=contagem,
-        letras_na_pagina={item.letra for item in paginacao.items},
-        filtros={"q": q, "grupo": grupo_id, "empresa": empresa_id, "letra": letra,
-                 "pendentes": so_pendentes, "modo": modo},
+        filtros={"q": q, "grupo": grupo_id, "empresa": empresa_id, "letra": letra, "pendentes": so_pendentes},
         grupos=Grupo.ordenados(),
         empresa_filtro=db.session.get(Empresa, empresa_id) if empresa_id else None,
         total=sum(contagem.values()),
-        resumo={
-            "contatos": Contato.ativos().count(),
-            "empresas": db.session.query(func.count(func.distinct(Contato.empresa_id)))
-                          .filter(Contato.excluido_em.is_(None), Contato.empresa_id.isnot(None)).scalar(),
-            "listas": len(Grupo.ordenados()),
-            "pendentes": len(servico.ids_com_pendencia()) if current_user.pode_gerir else 0,
-        },
     )
 
 

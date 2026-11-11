@@ -1018,7 +1018,7 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .filtros .busca { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
-  .pagina { padding: 22px 16px 56px; }
+  .pagina { padding: 40px 16px 56px; }
   .marca__sistema, .usuario-topo__nome { display: none; }
   .cabecalho h1 { font-size: 24px; }
   .filtros { grid-template-columns: 1fr; }
@@ -1195,8 +1195,8 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .ficha--folhas .ficha__rodape { margin-top: 16px; padding: 0 4px; border-top: 0; }
 
   /* --- Tela de entrada mais compacta ---------------------------------------- */
-  .login { padding: 22px 16px 40px; gap: 24px; align-content: start; min-height: 100svh; }
-  .login__marca { gap: 18px; }
+  .login { padding: 26px 16px 40px; gap: 34px; align-content: start; min-height: 100svh; }
+  .login__marca { gap: 46px; }
   .login__logo { width: 118px; }
   .login__sobretitulo { font-size: 11px; letter-spacing: .28em; }
   .login__titulo { margin-top: 6px; font-size: 40px; }

@@ -114,11 +114,13 @@ STATUS_SOLICITACAO = {
 ACAO_INCLUSAO = "inclusao"
 ACAO_ALTERACAO = "alteracao"
 ACAO_EXCLUSAO = "exclusao"
+ACAO_EXPORTACAO = "exportacao"
 
 ACOES = {
     ACAO_INCLUSAO: "Inclusão",
     ACAO_ALTERACAO: "Alteração",
     ACAO_EXCLUSAO: "Exclusão",
+    ACAO_EXPORTACAO: "Exportação de dados",
 }
 
 ORIGEM_DIRETA = "direta"

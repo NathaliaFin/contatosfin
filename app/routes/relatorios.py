@@ -6,10 +6,13 @@ import io
 from datetime import datetime, timedelta
 
 from flask import Blueprint, Response, render_template, request
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from app import constants as c
-from app.models import Historico, Solicitacao, Usuario
+from app.extensions import db
+from app.models import Contato, Historico, Solicitacao, Usuario
+from app.services import contatos as servico
+from app.services import exportacao
 from app.services.permissoes import gestao_requerida
 
 bp = Blueprint("relatorios", __name__, url_prefix="/relatorios")
@@ -33,7 +36,7 @@ def _data(nome):
 
 def _filtros():
     return {
-        "aba": request.args.get("aba") if request.args.get("aba") in ("historico", "solicitacoes") else "historico",
+        "aba": request.args.get("aba") if request.args.get("aba") in ("historico", "solicitacoes", "exportar") else "historico",
         "de": _data("de"),
         "ate": _data("ate"),
         "contato": (request.args.get("contato") or "").strip(),
@@ -84,6 +87,16 @@ def _consulta_solicitacoes(f):
 @bp.route("/")
 def index():
     f = _filtros()
+    if f["aba"] == "exportar":
+        return render_template(
+            "relatorios/index.html",
+            f=f,
+            total_contatos=Contato.ativos().count(),
+            exportacoes=Historico.query.filter_by(acao=c.ACAO_EXPORTACAO)
+            .order_by(Historico.criado_em.desc(), Historico.id.desc())
+            .limit(5)
+            .all(),
+        )
     consulta = _consulta_historico(f) if f["aba"] == "historico" else _consulta_solicitacoes(f)
     paginacao = consulta.paginate(page=request.args.get("pagina", 1, type=int), per_page=POR_PAGINA, error_out=False)
     return render_template(
@@ -137,4 +150,27 @@ def exportar():
         "﻿" + saida.getvalue(),
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{nome}"'},
+    )
+
+
+@bp.route("/exportar-contatos", methods=["POST"])
+def exportar_contatos():
+    """Planilha do Excel com todas as fichas ativas. Fica registrada no historico."""
+    incluir_restritos = bool(request.form.get("restritos"))
+    conteudo, total = exportacao.planilha(incluir_restritos, servico.ids_com_pendencia())
+
+    descricao = f"Planilha com {total} ficha(s), " + (
+        "com dados restritos" if incluir_restritos else "sem dados restritos"
+    )
+    db.session.add(Historico(
+        acao=c.ACAO_EXPORTACAO, origem=c.ORIGEM_DIRETA, usuario_id=current_user.id,
+        contato_nome=descricao, mudancas={},
+    ))
+    db.session.commit()
+
+    nome = f"contatos-fin-{datetime.now():%Y%m%d-%H%M}.xlsx"
+    return Response(
+        conteudo,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{nome}"', "Cache-Control": "private, no-store"},
     )

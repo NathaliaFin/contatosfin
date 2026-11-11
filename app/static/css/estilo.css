@@ -1101,3 +1101,15 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 .whats-foto { order: -1; margin-bottom: 14px; z-index: 4; }
 .botao--whats { background: var(--whats-escuro); border-color: var(--whats-escuro); color: #fff; }
 .botao--whats:hover { background: #178A43; border-color: #178A43; color: #fff; }
+
+/* --- Relatorios: exportar dados ------------------------------------------- */
+.exportar { display: grid; gap: 22px; max-width: 680px; }
+.exportar__resumo { display: flex; align-items: center; gap: 18px; font-size: 15px; color: var(--texto-2); }
+.exportar__numero { font-size: 44px; font-weight: 700; line-height: 1; color: var(--klein); font-variant-numeric: tabular-nums; }
+.exportar__opcao { align-items: flex-start; }
+.exportar__opcao input { margin-top: 3px; }
+.exportar__opcao span { display: grid; gap: 4px; font-weight: 600; color: var(--tinta); }
+.exportar__opcao span .icone { display: inline; vertical-align: -2px; margin-left: 4px; }
+.exportar__opcao small { font-size: 12.5px; font-weight: 400; color: var(--texto-2); }
+.exportar__nota { font-size: 12.5px; color: var(--texto-3); }
+.exportar__titulo { margin: 34px 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }

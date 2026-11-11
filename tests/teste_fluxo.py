@@ -209,5 +209,24 @@ with app.app_context():
     ok(antes == depois, f"banco volta exatamente ao estado anterior ({antes} == {depois})")
     ok(not demo.existe(), "demo nao existe mais")
 
+    print("\n[11] Exportar dados em Excel")
+    from openpyxl import load_workbook
+    entrar(cli, "usuario@fin.org.br")
+    ok(cli.post("/relatorios/exportar-contatos").status_code == 403, "usuario NAO exporta")
+    entrar(cli, "gestor@fin.org.br")
+    ok(b"Exportar dados" in cli.get("/relatorios/?aba=exportar").data, "aba Exportar dados aparece")
+    ativos = Contato.ativos().count()
+    registros = Historico.query.filter_by(acao=c.ACAO_EXPORTACAO).count()
+    r = cli.post("/relatorios/exportar-contatos")
+    ws = load_workbook(io.BytesIO(r.data)).active
+    cab = [x.value for x in ws[1]]
+    ok(r.status_code == 200 and ws.max_row == ativos + 1, f"planilha com todas as {ativos} fichas ativas")
+    ok("CPF" not in cab and "Nome" in cab and "Listas de trabalho" in cab, "sem restritos por padrao")
+    r = cli.post("/relatorios/exportar-contatos", data={"restritos": "1"})
+    ws = load_workbook(io.BytesIO(r.data)).active
+    linhas = {row[1]: dict(zip([x.value for x in ws[1]], row)) for row in ws.iter_rows(min_row=2, values_only=True)}
+    ok(linhas.get("Helena Duarte Vasconcelos", {}).get("Estado civil") == "casada", "restritos decifrados quando pedidos")
+    ok(Historico.query.filter_by(acao=c.ACAO_EXPORTACAO).count() == registros + 2, "cada exportacao fica no historico")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

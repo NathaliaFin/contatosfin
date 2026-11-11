@@ -338,5 +338,32 @@ with app.app_context():
     ok(db.session.get(Solicitacao, pedido_id).status == c.STATUS_PENDENTE, "aprovacao barrada: pedido continua pendente")
     ok(Contato.ativos().filter(Contato.email == "pedido.novo@exemplo.com.br").count() == 1, "nenhuma segunda ficha com o mesmo e-mail")
 
+print("\n[16] Montar a lista pela propria lista")
+novo.post(f"/solicitacoes/{pedido_id}/recusar")
+r = novo.post("/admin/grupos", data={"acao": "criar", "nome": "Lista Nova Teste"})
+with app.app_context():
+    from app.models import Grupo as G
+    lid = G.query.filter_by(nome="Lista Nova Teste").first().id
+    ids = [x.id for x in Contato.ativos().order_by(Contato.id).limit(3).all()]
+ok(r.status_code == 302 and r.headers["Location"].endswith(f"/listas/{lid}/participantes"), "criar lista leva direto a escolha dos participantes")
+h = novo.get(f"/listas/{lid}").get_data(as_text=True)
+ok("Adicionar contatos" in h and "Adicionar ou tirar contatos" in h, "lista vazia mostra o botao de adicionar")
+r = novo.get(f"/listas/{lid}/participantes")
+ok(r.status_code == 200 and "Salvar participantes" in r.get_data(as_text=True), "pagina de escolha abre")
+r = novo.post(f"/listas/{lid}/participantes", data={"vistos": ids, "marcados": ids})
+with app.app_context():
+    dentro = {x.id for x in Contato.ativos().filter(Contato.grupos.any(G.id == lid)).all()}
+    hist = Historico.query.filter(Historico.contato_id.in_(ids), Historico.acao == c.ACAO_ALTERACAO).order_by(Historico.id.desc()).first()
+ok(r.status_code == 302 and dentro == set(ids), "tres contatos entram na lista")
+ok(hist is not None and "grupos" in hist.mudancas, "entrada na lista fica no historico da ficha")
+r = novo.post(f"/listas/{lid}/participantes", data={"vistos": ids[:2], "marcados": ids[:1]})
+with app.app_context():
+    dentro = {x.id for x in Contato.ativos().filter(Contato.grupos.any(G.id == lid)).all()}
+ok(dentro == {ids[0], ids[2]}, "desmarcado sai; quem nao estava na tela continua")
+novo.post("/auth/sair")
+novo.post("/auth/login", data={"email": "usuario@fin.org.br", "senha": "Fin@2026"})
+ok(novo.get(f"/listas/{lid}/participantes").status_code == 403, "usuario NAO monta lista")
+ok("Adicionar ou tirar" not in novo.get(f"/listas/{lid}").get_data(as_text=True), "usuario nao ve o botao")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

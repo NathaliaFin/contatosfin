@@ -277,3 +277,65 @@ if ("serviceWorker" in navigator) {
     if (e.key === "Escape") fecharMenus(null);
   });
 })();
+
+// Escolher participantes de uma lista: busca, filtros e marca de "entra"/"sai".
+(function () {
+  function norm(t) {
+    return (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  document.querySelectorAll("[data-escolha]").forEach(function (form) {
+    var busca = form.querySelector("[data-escolha-busca]");
+    var itens = Array.prototype.slice.call(form.querySelectorAll(".escolha__lista li"));
+    var nada = form.querySelector("[data-escolha-nada]");
+    var total = form.querySelector("[data-escolha-total]");
+    var resumo = form.querySelector("[data-escolha-resumo]");
+    var botoes = form.querySelectorAll("[data-escolha-filtro]");
+    var filtro = "todos";
+
+    function marcas() {
+      var marcados = 0, entram = 0, saem = 0;
+      itens.forEach(function (li) {
+        var cb = li.querySelector(".escolha__marca");
+        var era = cb.hasAttribute("data-era");
+        if (cb.checked) marcados++;
+        if (cb.checked && !era) entram++;
+        if (!cb.checked && era) saem++;
+        li.setAttribute("data-mudou", cb.checked === era ? "" : (cb.checked ? "entra" : "sai"));
+      });
+      total.textContent = marcados;
+      var partes = [];
+      if (entram) partes.push(entram + (entram > 1 ? " entram" : " entra"));
+      if (saem) partes.push(saem + (saem > 1 ? " saem" : " sai"));
+      resumo.textContent = partes.length ? partes.join(" · ") + " (falta salvar)" : "Nenhuma mudança ainda";
+    }
+
+    function filtrar() {
+      var termo = norm(busca.value), visiveis = 0;
+      itens.forEach(function (li) {
+        var marcado = li.querySelector(".escolha__marca").checked;
+        var passa = (!termo || li.getAttribute("data-busca").indexOf(termo) !== -1) &&
+          (filtro === "todos" || (filtro === "marcados") === marcado);
+        li.hidden = !passa;
+        if (passa) visiveis++;
+      });
+      nada.hidden = visiveis > 0;
+    }
+
+    form.addEventListener("change", function (e) {
+      if (e.target.classList.contains("escolha__marca")) marcas();
+    });
+    busca.addEventListener("input", filtrar);
+    busca.addEventListener("keydown", function (e) { if (e.key === "Enter") e.preventDefault(); });
+    botoes.forEach(function (b) {
+      b.addEventListener("click", function () {
+        filtro = b.getAttribute("data-escolha-filtro");
+        botoes.forEach(function (x) {
+          x.classList.toggle("ativo", x === b);
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
+        filtrar();
+      });
+    });
+    marcas();
+  });
+})();

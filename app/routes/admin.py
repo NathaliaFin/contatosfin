@@ -131,9 +131,11 @@ def grupos():
                 flash("Já existe uma lista com esse nome.", "erro")
             else:
                 maior = db.session.query(func.max(Grupo.ordem)).scalar() or 0
-                db.session.add(Grupo(nome=nome[:120], ordem=maior + 1))
+                novo = Grupo(nome=nome[:120], ordem=maior + 1)
+                db.session.add(novo)
                 db.session.commit()
-                flash(f"Lista “{nome}” criada.", "sucesso")
+                flash(f"Lista “{nome}” criada. Agora marque quem participa dela.", "sucesso")
+                return redirect(url_for("contatos.lista_participantes", grupo_id=novo.id))
         elif grupo is None:
             abort(404)
         elif acao == "renomear":

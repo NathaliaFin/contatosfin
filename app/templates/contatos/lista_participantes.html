@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, retrato %}
+{% block titulo %}Participantes · {{ grupo.nome }}{% endblock %}
+{% block classe_pagina %}pagina--estreita{% endblock %}
+{% block conteudo %}
+{% set voltar = url_for('contatos.lista_trabalho', grupo_id=grupo.id) %}
+<div class="barra-acoes barra-acoes--larga">
+  <a class="link-voltar" href="{{ voltar }}">{{ icone('voltar', 'icone--p') }} {{ grupo.nome }}</a>
+</div>
+
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Lista de trabalho · {{ grupo.nome }}</p>
+    <h1>Quem participa</h1>
+    <p class="cabecalho__apoio">Marque quem faz parte da lista e desmarque quem deve sair. Nada muda até você clicar em “Salvar participantes”.</p>
+  </div>
+</div>
+
+{% if contatos %}
+<form class="escolha" method="post" data-escolha>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="escolha__barra">
+    <label class="escolha__busca">
+      {{ icone('busca', 'icone--p') }}
+      <input type="search" placeholder="Buscar por nome, cargo, organização ou e-mail" aria-label="Buscar contato" data-escolha-busca autocomplete="off">
+    </label>
+    <div class="escolha__filtros" role="group" aria-label="Mostrar">
+      <button type="button" class="ativo" aria-pressed="true" data-escolha-filtro="todos">Todos ({{ contatos|length }})</button>
+      <button type="button" aria-pressed="false" data-escolha-filtro="marcados">Na lista (<span data-escolha-total>{{ membros|length }}</span>)</button>
+      <button type="button" aria-pressed="false" data-escolha-filtro="fora">Fora da lista</button>
+    </div>
+  </div>
+
+  <ul class="escolha__lista">
+    {% for ct in contatos %}
+    <li data-busca="{{ ct.busca or '' }}">
+      <label class="escolha__item">
+        <input type="hidden" name="vistos" value="{{ ct.id }}">
+        <input class="escolha__marca" type="checkbox" name="marcados" value="{{ ct.id }}" {% if ct.id in membros %}checked data-era{% endif %}>
+        {{ retrato(ct, 'mini') }}
+        <span class="escolha__texto">
+          <strong>{{ ct.nome_exibicao }}</strong>
+          {% if ct.cargo or ct.empresa %}<span>{{ ct.cargo or '' }}{% if ct.cargo and ct.empresa %} · {% endif %}{{ ct.empresa.nome if ct.empresa else '' }}</span>{% endif %}
+        </span>
+        <em class="escolha__estado" aria-hidden="true"></em>
+      </label>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="escolha__nada" data-escolha-nada hidden>Nenhum contato encontrado.</p>
+
+  <div class="escolha__rodape">
+    <span class="escolha__resumo" data-escolha-resumo aria-live="polite">Nenhuma mudança ainda</span>
+    <a class="botao botao--fantasma" href="{{ voltar }}">Cancelar</a>
+    <button class="botao" type="submit">{{ icone('check', 'icone--p') }} Salvar participantes</button>
+  </div>
+</form>
+{% else %}
+<div class="vazio">
+  <h2>Nenhuma ficha cadastrada</h2>
+  <p>Cadastre contatos primeiro; depois volte aqui para montar a lista.</p>
+</div>
+{% endif %}
+{% endblock %}

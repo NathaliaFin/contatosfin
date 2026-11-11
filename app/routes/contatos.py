@@ -3,6 +3,7 @@
 from flask import Blueprint, Response, abort, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from app import constants as c
 from app.extensions import db
@@ -222,6 +223,47 @@ def lista_trabalho(grupo_id):
         links_whats={ct.id: compartilhar.link_compartilhar(ct) for ct in participantes},
         modos=MODOS_IMPRESSAO,
     )
+
+
+@bp.route("/listas/<int:grupo_id>/participantes", methods=["GET", "POST"])
+@gestao_requerida
+def lista_participantes(grupo_id):
+    """Marcar quem entra e quem sai da lista, sem abrir ficha por ficha.
+
+    Cada ficha que muda ganha uma linha no historico, como numa edicao. So
+    mexe nas fichas que estavam na tela (``vistos``): quem outra pessoa
+    incluiu enquanto isso nao sai por engano.
+    """
+    grupo = _lista_ou_404(grupo_id)
+    if request.method == "POST":
+        vistos = {int(x) for x in request.form.getlist("vistos") if x.isdigit()}
+        marcados = {int(x) for x in request.form.getlist("marcados") if x.isdigit()} & vistos
+        entraram = sairam = 0
+        fichas = Contato.ativos().filter(Contato.id.in_(vistos)).all() if vistos else []
+        for ct in fichas:
+            atuais = {g.id for g in ct.grupos}
+            quer = ct.id in marcados
+            if (grupo.id in atuais) == quer:
+                continue
+            novos = sorted(atuais | {grupo.id}) if quer else sorted(atuais - {grupo.id})
+            servico.editar_contato(ct, {"grupos": novos}, current_user)
+            entraram += quer
+            sairam += not quer
+        db.session.commit()
+        if entraram or sairam:
+            partes = []
+            if entraram:
+                partes.append(f"{entraram} contato{'s' if entraram > 1 else ''} entr{'aram' if entraram > 1 else 'ou'}")
+            if sairam:
+                partes.append(f"{sairam} sa{'íram' if sairam > 1 else 'iu'}")
+            flash(f"Lista “{grupo.nome}” atualizada: " + " e ".join(partes) + ".", "sucesso")
+        else:
+            flash("Nenhuma mudança na lista.", "info")
+        return redirect(url_for("contatos.lista_trabalho", grupo_id=grupo.id))
+
+    contatos = Contato.ativos().options(joinedload(Contato.empresa)).order_by(Contato.busca, Contato.id).all()
+    membros = {ct.id for ct in contatos if any(g.id == grupo.id for g in ct.grupos)}
+    return render_template("contatos/lista_participantes.html", grupo=grupo, contatos=contatos, membros=membros)
 
 
 @bp.route("/listas/<int:grupo_id>/imprimir")

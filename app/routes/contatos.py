@@ -99,6 +99,7 @@ def lista():
         paginacao=paginacao,
         contatos=paginacao.items,
         pendentes=pendentes,
+        links_whats={item.id: compartilhar.link_compartilhar(item) for item in paginacao.items},
         letras=LETRAS,
         contagem=contagem,
         filtros={"q": q, "grupo": grupo_id, "empresa": empresa_id, "letra": letra, "pendentes": so_pendentes},

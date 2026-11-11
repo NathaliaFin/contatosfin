@@ -63,14 +63,14 @@
 {% if contatos %}
 <div class="fichario">
   {% for ct in contatos %}
-  <a class="cartao" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">
+  <article class="cartao">
     <span class="cartao__aba">{{ ct.letra or '#' }}</span>
     <span class="cartao__numero">Nº {{ ct.numero }}</span>
     {% if ct.id in pendentes %}<span class="carimbo">Alteração pendente</span>{% endif %}
     <div class="cartao__corpo">
       {{ retrato(ct, 'mini') }}
       <div>
-        <h2 class="cartao__nome">{{ ct.nome_exibicao }}</h2>
+        <h2 class="cartao__nome"><a class="cartao__link" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">{{ ct.nome_exibicao }}</a></h2>
         {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
         {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
       </div>
@@ -82,7 +82,8 @@
       {{ selos(ct.grupos) }}
     </div>
     {% endif %}
-  </a>
+    <a class="botao-whats cartao__whats" href="{{ links_whats[ct.id] }}" target="_blank" rel="noopener" title="Compartilhar no WhatsApp" aria-label="Compartilhar {{ ct.nome_exibicao }} no WhatsApp">{{ icone('whatsapp') }}</a>
+  </article>
   {% endfor %}
 </div>
 {{ paginar(paginacao, 'contatos.lista', dict(base, letra=filtros.letra or None)) }}

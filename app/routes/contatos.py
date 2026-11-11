@@ -125,7 +125,6 @@ def lista():
         paginacao=paginacao,
         contatos=paginacao.items,
         pendentes=pendentes,
-        links_whats={item.id: compartilhar.link_compartilhar(item) for item in paginacao.items},
         letras=LETRAS,
         contagem=contagem,
         filtros={"q": q, "grupo": grupo_id, "empresa": empresa_id, "letra": letra, "pendentes": so_pendentes},
@@ -154,11 +153,6 @@ def ficha(contato_id):
     return render_template(
         "contatos/ficha.html",
         contato=contato,
-        whatsapp={
-            "texto": compartilhar.texto_whatsapp(contato),
-            "link": compartilhar.link_compartilhar(contato),
-            "aplicativo": compartilhar.link_aplicativo(contato),
-        },
         pendente=any(s.tipo in (c.TIPO_ALTERACAO, c.TIPO_EXCLUSAO) for s in abertas),
         solicitacoes=visiveis,
         historico=historico,
@@ -222,7 +216,6 @@ def lista_trabalho(grupo_id):
         grupo=grupo,
         contatos=participantes,
         pendentes=servico.ids_com_pendencia(ct.id for ct in participantes),
-        links_whats={ct.id: compartilhar.link_compartilhar(ct) for ct in participantes},
         modos=MODOS_IMPRESSAO,
     )
 

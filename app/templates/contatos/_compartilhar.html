@@ -1,0 +1,24 @@
+{#- Botao de compartilhar (icone da caixinha com a setinha) e a caixinha com
+    as opcoes: WhatsApp, cartao .vcf, copiar texto e compartilhar do aparelho.
+
+    nativo=True (cartoes do fichario): no celular, tocar no botao abre direto
+    o compartilhar do proprio aparelho; no computador, abre a caixinha. -#}
+{% from "_macros.html" import icone %}
+{% macro menu_compartilhar(ct, classe='', grande=False, nativo=False) -%}
+{%- set dados = compartilhamento(ct) -%}
+<details class="menu compartilhar {{ classe }}" data-compartilhar{% if nativo %} data-compartilhar-nativo{% endif %} data-titulo="{{ ct.nome_exibicao }}">
+  <summary class="botao-compartilhar{% if grande %} botao-compartilhar--grande{% endif %}" title="Compartilhar contato" aria-label="Compartilhar {{ ct.nome_exibicao }}">{{ icone('compartilhar') }}</summary>
+  <div class="menu__caixa menu__caixa--whats">
+    <p><strong>Compartilhar contato.</strong> Pelo WhatsApp, a mensagem abre pronta e você escolhe para quem enviar.</p>
+    <pre class="whats-previa" data-whats-texto>{{ dados.texto }}</pre>
+    <a class="botao botao--whats" href="{{ dados.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
+    <a class="whats-alternativa" href="{{ dados.aplicativo }}">Abrir direto no aplicativo do Windows</a>
+    <div class="whats-linha">
+      <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.cartao', contato_id=ct.id) }}" data-whats-vcf>{{ icone('download', 'icone--p') }} Baixar cartão (.vcf)</a>
+      <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
+      <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
+    </div>
+    <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
+  </div>
+</details>
+{%- endmacro %}

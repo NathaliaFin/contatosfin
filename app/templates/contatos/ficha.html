@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icone, retrato, selos, valor, mudancas, situacao %}
+{% from "contatos/_compartilhar.html" import menu_compartilhar %}
 {% block titulo %}{{ contato.nome_exibicao }}{% endblock %}
 {% block conteudo %}
 <div class="barra-acoes">
@@ -69,21 +70,7 @@
       </div>
       <div class="ficha__foto">
         {{ retrato(contato, 'grande') }}
-        <details class="menu whats-foto" data-compartilhar>
-          <summary class="botao-whats botao-whats--grande" title="Compartilhar no WhatsApp" aria-label="Compartilhar no WhatsApp">{{ icone('whatsapp') }}</summary>
-          <div class="menu__caixa menu__caixa--whats">
-            <p>Abre o WhatsApp desta máquina com a mensagem pronta. Você escolhe para quem enviar.</p>
-            <pre class="whats-previa" data-whats-texto>{{ whatsapp.texto }}</pre>
-            <a class="botao botao--whats" href="{{ whatsapp.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
-            <a class="whats-alternativa" href="{{ whatsapp.aplicativo }}">Abrir direto no aplicativo do Windows</a>
-            <div class="whats-linha">
-              <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.cartao', contato_id=contato.id) }}" data-whats-vcf>{{ icone('download', 'icone--p') }} Baixar cartão (.vcf)</a>
-              <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
-              <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
-            </div>
-            <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
-          </div>
-        </details>
+        {{ menu_compartilhar(contato, 'whats-foto', grande=True) }}
       </div>
       {% if pendente %}<span class="carimbo carimbo--grande">Alteração pendente</span>{% endif %}
     </header>

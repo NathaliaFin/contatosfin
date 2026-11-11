@@ -1318,3 +1318,34 @@ li[data-mudou="sai"] .escolha__item { background: var(--erro-050); }
    (a regra do WhatsApp acima deixa a foto da ficha em linha). */
 .ficha__foto.seletor-foto { flex-direction: column; align-items: center; gap: 10px; }
 .ficha__foto.seletor-foto .campo__ajuda, .ficha__foto.seletor-foto .campo__erro { margin: 0; text-align: center; max-width: 200px; }
+
+/* --- Botao de compartilhar (caixinha com a setinha), no azul da Fin -------- */
+.botao-compartilhar {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--klein);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 60, .2);
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+.botao-compartilhar:hover, .menu[open] > .botao-compartilhar { background: var(--cobalto); transform: scale(1.06); }
+.botao-compartilhar:focus-visible { outline: 3px solid rgba(0, 40, 230, .35); outline-offset: 2px; }
+.botao-compartilhar .icone { width: 18px; height: 18px; stroke-width: 2; margin-top: -2px; }
+.botao-compartilhar--grande { width: 40px; height: 40px; }
+.botao-compartilhar--grande .icone { width: 21px; height: 21px; }
+
+/* No cartao: acima da linha tracejada, a direita, por cima do link que cobre o cartao */
+.cartao__compartilhar { position: relative; z-index: 3; margin-top: auto; align-self: flex-end; }
+.cartao:has(.menu[open]) { z-index: 20; }
+.cartao__compartilhar .menu__caixa { cursor: auto; text-align: left; }
+@media (max-width: 720px) {
+  .cartao__compartilhar .menu__caixa {
+    position: fixed; top: auto; left: 12px; right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: auto; max-height: 82vh; overflow-y: auto; z-index: 30;
+  }
+}

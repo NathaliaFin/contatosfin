@@ -374,5 +374,16 @@ nomes = _re.findall(r'name="grupos" value="\d+" ?(?:checked)?><span>([^<]+)</spa
 from app.services.texto import normalizar as _n
 ok(len(nomes) > 2 and nomes == sorted(nomes, key=_n), f"listas em ordem alfabetica: {nomes}")
 
+print("\n[18] Botao de compartilhar nos cartoes e na ficha")
+h = novo.get("/contatos").get_data(as_text=True)
+cartoes = h.count('class="cartao"')
+ok(cartoes > 0 and h.count("data-compartilhar-nativo") == cartoes, f"cada um dos {cartoes} cartoes tem o botao de compartilhar")
+ok("#i-compartilhar" in h and "Abrir no WhatsApp" in h and "Baixar cartão (.vcf)" in h, "cartao abre a mesma caixinha da ficha")
+ok("casada" not in h and "111.444.777-35" not in h, "caixinha dos cartoes nao leva dados restritos")
+h = novo.get(f"/contatos/{hel_id}").get_data(as_text=True)
+ok("#i-compartilhar" in h and "data-compartilhar-nativo" not in h and "Abrir no WhatsApp" in h, "ficha usa o mesmo botao, sempre com a caixinha")
+h = novo.get(f"/listas/{lid}").get_data(as_text=True)
+ok("data-compartilhar-nativo" in h, "cartoes da pagina da lista tambem compartilham")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

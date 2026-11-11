@@ -131,6 +131,17 @@ def _registrar_filtros(app: Flask) -> None:
 
         return link_conversa(valor)
 
+    @app.template_global("compartilhamento")
+    def compartilhamento(contato):
+        """Texto e links do menu de compartilhar (cartao e ficha)."""
+        from app.services import compartilhar
+
+        return {
+            "texto": compartilhar.texto_whatsapp(contato),
+            "link": compartilhar.link_compartilhar(contato),
+            "aplicativo": compartilhar.link_aplicativo(contato),
+        }
+
     @app.template_filter("telefone_link")
     def telefone_link(valor):
         from app.services.validacao import digitos

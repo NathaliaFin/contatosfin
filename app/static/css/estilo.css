@@ -1179,7 +1179,7 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .ficha__folha::before {
     content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 22px;
     background-image: radial-gradient(circle at 11px 11px, var(--fundo) 0 6.5px, var(--linha-forte) 7px 8px, transparent 8.5px);
-    background-size: 22px 110px; background-repeat: repeat-y; background-position: 0 40px;
+    background-size: 22px 110px; background-repeat: no-repeat round; background-position: 0 0; top: 30px;
   }
   .ficha__folha::after {
     content: ""; position: absolute; left: 36px; top: 0; bottom: 0;
@@ -1203,7 +1203,7 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .login__texto { margin-top: 10px; font-size: 14px; line-height: 1.5; }
   .login__pilha::before { transform: rotate(-2.4deg) translate(-6px, 6px); }
   .login__pilha::after { transform: rotate(1.4deg) translate(5px, 4px); }
-  .ficha--login { padding: 46px 18px 24px 46px; }
+  .ficha--login { padding: 46px 18px 38px 46px; }
   .ficha--login .ficha__etiqueta { right: 14px; min-width: 0; padding: 8px 14px; }
   .ficha--login .ficha__etiqueta strong { font-size: 14px; letter-spacing: .12em; }
   .ficha--login .sobretitulo { margin-top: 12px; font-size: 10px; }
@@ -1228,3 +1228,11 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 
 /* Recado de ajuda no pe da folha de entrada */
 .login__ajuda { margin-top: 26px; font-size: 14px; color: var(--texto-2); }
+
+/* Furos da folha de entrada: o "round" ajusta o espacamento para caber um
+   numero inteiro de furos na altura da folha, entao o ultimo nunca cai na
+   beira do papel, qualquer que seja o tamanho do conteudo. */
+.ficha--login::before { top: 44px; background-position: 0 0; background-repeat: no-repeat round; }
+@media (max-width: 720px) {
+  .ficha--login::before { top: 30px; }
+}

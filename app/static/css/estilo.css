@@ -1347,5 +1347,8 @@ li[data-mudou="sai"] .escolha__item { background: var(--erro-050); }
     position: fixed; top: auto; left: 12px; right: 12px;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     width: auto; max-height: 82vh; overflow-y: auto; z-index: 30;
+    border-radius: var(--raio); box-shadow: 0 -10px 40px rgba(0, 0, 40, .35);
   }
+  /* o "levantar" do cartao (transform) prenderia a caixinha dentro dele */
+  .cartao:has(.menu[open]) { transform: none; }
 }

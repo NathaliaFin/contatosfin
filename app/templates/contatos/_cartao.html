@@ -12,7 +12,7 @@
       <h2 class="cartao__nome"><a class="cartao__link" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">{{ ct.nome_exibicao }}</a></h2>
       {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
       {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
-      {{ menu_compartilhar(ct, 'cartao__compartilhar', nativo=True) }}
+      {{ menu_compartilhar(ct, 'cartao__compartilhar') }}
     </div>
   </div>
   {% if ct.email or ct.celular or ct.telefone_comercial or ct.grupos %}

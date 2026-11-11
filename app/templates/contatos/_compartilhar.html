@@ -1,12 +1,11 @@
 {#- Botao de compartilhar (icone da caixinha com a setinha) e a caixinha com
-    as opcoes: WhatsApp, cartao .vcf, copiar texto e compartilhar do aparelho.
-
-    nativo=True (cartoes do fichario): no celular, tocar no botao abre direto
-    o compartilhar do proprio aparelho; no computador, abre a caixinha. -#}
+    as opcoes: WhatsApp, cartao .vcf, copiar texto e (no celular) enviar o
+    cartao pelo compartilhar do aparelho. Igual nos cartoes e na ficha; no
+    celular a caixinha sobe presa no pe da tela. -#}
 {% from "_macros.html" import icone %}
-{% macro menu_compartilhar(ct, classe='', grande=False, nativo=False) -%}
+{% macro menu_compartilhar(ct, classe='', grande=False) -%}
 {%- set dados = compartilhamento(ct) -%}
-<details class="menu compartilhar {{ classe }}" data-compartilhar{% if nativo %} data-compartilhar-nativo{% endif %} data-titulo="{{ ct.nome_exibicao }}">
+<details class="menu compartilhar {{ classe }}" data-compartilhar>
   <summary class="botao-compartilhar{% if grande %} botao-compartilhar--grande{% endif %}" title="Compartilhar contato" aria-label="Compartilhar {{ ct.nome_exibicao }}">{{ icone('compartilhar') }}</summary>
   <div class="menu__caixa menu__caixa--whats">
     <p><strong>Compartilhar contato</strong></p>

@@ -196,28 +196,17 @@
   });
 })();
 
-/* Compartilhar contato: copiar texto, cartao .vcf pelo compartilhamento do
-   aparelho e, nos cartoes do fichario, o compartilhar nativo direto no celular. */
+/* Compartilhar contato: copiar texto e, no celular, enviar o cartao .vcf
+   pelo compartilhar do aparelho. */
 (function () {
   var celular = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 
   document.querySelectorAll("[data-compartilhar]").forEach(function (caixa) {
-    var resumo = caixa.querySelector("summary");
     var texto = caixa.querySelector("[data-whats-texto]").textContent;
     var copiar = caixa.querySelector("[data-whats-copiar]");
     var enviar = caixa.querySelector("[data-whats-enviar]");
     var vcf = caixa.querySelector("[data-whats-vcf]");
     var arquivo = null, buscou = false;
-
-    // Celular + cartao do fichario: abre a lista de apps do proprio aparelho.
-    if (celular && navigator.share && caixa.hasAttribute("data-compartilhar-nativo")) {
-      resumo.addEventListener("click", function (e) {
-        e.preventDefault();
-        navigator.share({ title: caixa.getAttribute("data-titulo") || "Contato", text: texto }).catch(function (erro) {
-          if (erro && erro.name !== "AbortError") caixa.setAttribute("open", "");
-        });
-      });
-    }
 
     copiar.addEventListener("click", function () {
       navigator.clipboard.writeText(texto).then(function () {

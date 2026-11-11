@@ -5,20 +5,20 @@
 <div class="barra-acoes">
   <a class="link-voltar" href="{{ url_for('contatos.lista') }}">{{ icone('voltar', 'icone--p') }} Contatos</a>
   <div class="barra-acoes__botoes">
-    <button class="botao botao--fantasma botao--pequeno" type="button" onclick="window.print()">{{ icone('imprimir', 'icone--p') }} Imprimir</button>
+    <button class="botao botao--fantasma botao--pequeno botao--so-icone-celular" type="button" onclick="window.print()" title="Imprimir" aria-label="Imprimir">{{ icone('imprimir', 'icone--p') }}<span class="rotulo-longo"> Imprimir</span></button>
     {% if current_user.pode_gerir %}
     <details class="menu">
-      <summary class="botao botao--perigo">{{ icone('lixeira', 'icone--p') }} Excluir</summary>
+      <summary class="botao botao--perigo botao--so-icone-celular" title="Excluir" aria-label="Excluir">{{ icone('lixeira', 'icone--p') }}<span class="rotulo-longo"> Excluir</span></summary>
       <form class="menu__caixa" method="post" action="{{ url_for('contatos.excluir', contato_id=contato.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p>Excluir a ficha de <strong>{{ contato.nome_exibicao }}</strong>? Ela sai da lista de contatos, mas o histórico continua nos relatórios.</p>
         <button class="botao botao--perigo" type="submit">Confirmar exclusão</button>
       </form>
     </details>
-    <a class="botao" href="{{ url_for('contatos.editar', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }} Editar ficha</a>
+    <a class="botao" href="{{ url_for('contatos.editar', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }}<span class="rotulo-longo"> Editar ficha</span><span class="rotulo-curto"> Editar</span></a>
     {% else %}
     <details class="menu">
-      <summary class="botao botao--contorno">{{ icone('lixeira', 'icone--p') }} Solicitar exclusão</summary>
+      <summary class="botao botao--contorno botao--so-icone-celular" title="Solicitar exclusão" aria-label="Solicitar exclusão">{{ icone('lixeira', 'icone--p') }}<span class="rotulo-longo"> Solicitar exclusão</span></summary>
       <form class="menu__caixa" method="post" action="{{ url_for('contatos.solicitar_exclusao', contato_id=contato.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p>O gestor de dados recebe o pedido por e-mail e decide. Nada é excluído antes disso.</p>
@@ -27,7 +27,7 @@
         <button class="botao" type="submit">{{ icone('enviar', 'icone--p') }} Enviar pedido</button>
       </form>
     </details>
-    <a class="botao" href="{{ url_for('contatos.solicitar_alteracao', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }} Solicitar alteração</a>
+    <a class="botao" href="{{ url_for('contatos.solicitar_alteracao', contato_id=contato.id) }}">{{ icone('lapis', 'icone--p') }}<span class="rotulo-longo"> Solicitar alteração</span><span class="rotulo-curto"> Alterar</span></a>
     {% endif %}
   </div>
 </div>
@@ -39,59 +39,72 @@
 </div>
 {% endif %}
 
-<article class="ficha">
+<article class="ficha ficha--folhas">
   <div class="ficha__etiqueta"><span>Ficha nº</span><strong>{{ contato.numero }}</strong></div>
-
-  <header class="ficha__topo">
-    <div class="ficha__identificacao">
-      <p class="sobretitulo">Ficha de contato</p>
-      <h1>{{ contato.nome_exibicao }}</h1>
-      {% if contato.cargo or contato.empresa %}
-      <p class="ficha__cargo">
-        {{ contato.cargo or '' }}{% if contato.cargo and contato.empresa %} · {% endif %}
-        {% if contato.empresa %}<a href="{{ url_for('contatos.lista', empresa=contato.empresa.id) }}">{{ contato.empresa.nome }}</a>{% endif %}
-      </p>
-      {% endif %}
-      {{ selos(contato.grupos, link=True) }}
-    </div>
-    <div class="ficha__foto">
-      {{ retrato(contato, 'grande') }}
-      <details class="menu whats-foto" data-compartilhar>
-        <summary class="botao-whats botao-whats--grande" title="Compartilhar no WhatsApp" aria-label="Compartilhar no WhatsApp">{{ icone('whatsapp') }}</summary>
-        <div class="menu__caixa menu__caixa--whats">
-          <p>Abre o WhatsApp desta máquina com a mensagem pronta. Você escolhe para quem enviar.</p>
-          <pre class="whats-previa" data-whats-texto>{{ whatsapp.texto }}</pre>
-          <a class="botao botao--whats" href="{{ whatsapp.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
-          <a class="whats-alternativa" href="{{ whatsapp.aplicativo }}">Abrir direto no aplicativo do Windows</a>
-          <div class="whats-linha">
-            <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.cartao', contato_id=contato.id) }}" data-whats-vcf>{{ icone('download', 'icone--p') }} Baixar cartão (.vcf)</a>
-            <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
-            <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
-          </div>
-          <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
-        </div>
-      </details>
-    </div>
-    {% if pendente %}<span class="carimbo carimbo--grande">Alteração pendente</span>{% endif %}
-  </header>
 
   {% set secoes = [('dados', ['email', 'celular', 'telefone_comercial', 'endereco_comercial']), ('secretaria', None), ('observacoes', None)] %}
   {% if mostrar_restritos %}{% set secoes = secoes + [('restritos', None)] %}{% endif %}
+  {#- No celular a ficha se divide em folhas: a primeira (identificacao e dados
+      do contato) sempre existe; as demais so aparecem se tiverem algo
+      preenchido. No computador continua uma folha so, com tudo. -#}
+  {% set ns = namespace(cheias=['dados']) %}
+  {% for chave, apenas in secoes if chave != 'dados' %}
+    {% set f = namespace(tem=false) %}
+    {% for campo in c.campos_da_secao(chave) %}{% if contato[campo.chave] %}{% set f.tem = true %}{% endif %}{% endfor %}
+    {% if f.tem %}{% set ns.cheias = ns.cheias + [chave] %}{% endif %}
+  {% endfor %}
   {% for chave, apenas in secoes %}
-  <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">
-    <h2 class="secao__aba"><em>{{ '%02d' % loop.index }}</em> {{ c.SECOES[chave] }}{% if chave == 'restritos' %} {{ icone('cadeado', 'icone--p') }}{% endif %}</h2>
-    {% if chave == 'restritos' %}
-    <p class="secao__nota">Visível apenas para o gestor de dados e o administrador. Gravado com criptografia. <span class="carimbo carimbo--restrito">Confidencial</span></p>
-    {% endif %}
-    <div class="campos">
-      {% for campo in c.campos_da_secao(chave) if not apenas or campo.chave in apenas %}
-      <div class="campo campo--{{ campo.largura }}">
-        <span class="campo__rotulo">{{ campo.rotulo }}</span>
-        {{ valor(campo, contato) }}
+  <div class="ficha__folha{% if chave not in ns.cheias %} ficha__folha--vazia{% endif %}">
+    {% if loop.first %}
+    <header class="ficha__topo">
+      <div class="ficha__identificacao">
+        <p class="sobretitulo">Ficha de contato</p>
+        <h1>{{ contato.nome_exibicao }}</h1>
+        {% if contato.cargo or contato.empresa %}
+        <p class="ficha__cargo">
+          {{ contato.cargo or '' }}{% if contato.cargo and contato.empresa %} · {% endif %}
+          {% if contato.empresa %}<a href="{{ url_for('contatos.lista', empresa=contato.empresa.id) }}">{{ contato.empresa.nome }}</a>{% endif %}
+        </p>
+        {% endif %}
+        {{ selos(contato.grupos, link=True) }}
       </div>
-      {% endfor %}
-    </div>
-  </section>
+      <div class="ficha__foto">
+        {{ retrato(contato, 'grande') }}
+        <details class="menu whats-foto" data-compartilhar>
+          <summary class="botao-whats botao-whats--grande" title="Compartilhar no WhatsApp" aria-label="Compartilhar no WhatsApp">{{ icone('whatsapp') }}</summary>
+          <div class="menu__caixa menu__caixa--whats">
+            <p>Abre o WhatsApp desta máquina com a mensagem pronta. Você escolhe para quem enviar.</p>
+            <pre class="whats-previa" data-whats-texto>{{ whatsapp.texto }}</pre>
+            <a class="botao botao--whats" href="{{ whatsapp.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
+            <a class="whats-alternativa" href="{{ whatsapp.aplicativo }}">Abrir direto no aplicativo do Windows</a>
+            <div class="whats-linha">
+              <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.cartao', contato_id=contato.id) }}" data-whats-vcf>{{ icone('download', 'icone--p') }} Baixar cartão (.vcf)</a>
+              <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
+              <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
+            </div>
+            <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
+          </div>
+        </details>
+      </div>
+      {% if pendente %}<span class="carimbo carimbo--grande">Alteração pendente</span>{% endif %}
+    </header>
+    {% endif %}
+    <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">
+      <h2 class="secao__aba"><em>{{ '%02d' % loop.index }}</em> {{ c.SECOES[chave] }}{% if chave == 'restritos' %} {{ icone('cadeado', 'icone--p') }}{% endif %}</h2>
+      {% if chave == 'restritos' %}
+      <p class="secao__nota">Visível apenas para o gestor de dados e o administrador. Gravado com criptografia. <span class="carimbo carimbo--restrito">Confidencial</span></p>
+      {% endif %}
+      <div class="campos">
+        {% for campo in c.campos_da_secao(chave) if not apenas or campo.chave in apenas %}
+        <div class="campo campo--{{ campo.largura }}">
+          <span class="campo__rotulo">{{ campo.rotulo }}</span>
+          {{ valor(campo, contato) }}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% if chave in ns.cheias %}<span class="ficha__folha-num">Folha {{ ns.cheias.index(chave) + 1 }} de {{ ns.cheias|length }}</span>{% endif %}
+  </div>
   {% endfor %}
 
   <footer class="ficha__rodape">

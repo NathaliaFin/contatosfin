@@ -17,11 +17,14 @@
 {% set bp = request.blueprint %}
 <header class="topo">
   <div class="topo__interno">
+    <button class="menu-celular" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-principal" data-menu-celular>
+      <span></span><span></span><span></span>
+    </button>
     <a class="marca" href="{{ url_for('contatos.lista') }}" aria-label="Contatos Fin — início">
       <img src="{{ url_for('static', filename='img/marca/fin_dec_hor_cor_rgb_neg-recorte.png') }}" alt="Fin — Confederação Nacional das Instituições Financeiras">
       <span class="marca__sistema">Contatos</span>
     </a>
-    <nav class="nav" aria-label="Principal">
+    <nav class="nav" id="menu-principal" aria-label="Principal">
       <a class="nav__item{% if bp == 'contatos' %} nav__item--ativo{% endif %}" href="{{ url_for('contatos.lista') }}">Contatos</a>
       <a class="nav__item{% if bp == 'solicitacoes' %} nav__item--ativo{% endif %}" href="{{ url_for('solicitacoes.lista') }}">
         {% if current_user.pode_gerir %}Solicitações{% if pendentes_nav %} <span class="contador" title="Aguardando aprovação">{{ pendentes_nav }}</span>{% endif %}{% else %}Minhas solicitações{% endif %}
@@ -34,6 +37,7 @@
       {% if current_user.is_admin %}
       <a class="nav__item{% if request.endpoint and request.endpoint.startswith('admin.usuario') %} nav__item--ativo{% endif %}" href="{{ url_for('admin.usuarios') }}">Usuários</a>
       {% endif %}
+      <div class="nav__usuario"><strong>{{ current_user.nome }}</strong><span>{{ current_user.rotulo_perfil }}</span></div>
     </nav>
     <div class="usuario-topo">
       <div class="usuario-topo__nome">

@@ -232,3 +232,26 @@
     });
   });
 })();
+
+/* Menu de tres barrinhas (celular): abre e fecha a lista vertical. */
+(function () {
+  var botao = document.querySelector("[data-menu-celular]");
+  if (!botao) return;
+  var topo = botao.closest(".topo");
+
+  function alternar(abrir) {
+    topo.classList.toggle("topo--aberto", abrir);
+    botao.setAttribute("aria-expanded", abrir ? "true" : "false");
+    botao.setAttribute("aria-label", abrir ? "Fechar menu" : "Abrir menu");
+  }
+
+  botao.addEventListener("click", function () {
+    alternar(!topo.classList.contains("topo--aberto"));
+  });
+  document.addEventListener("click", function (e) {
+    if (topo.classList.contains("topo--aberto") && !topo.contains(e.target)) alternar(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") alternar(false);
+  });
+})();

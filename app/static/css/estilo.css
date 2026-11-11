@@ -1013,9 +1013,6 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 
 /* --- Responsivo ------------------------------------------------------------- */
 @media (max-width: 960px) {
-  .topo__interno { flex-wrap: wrap; gap: 0 18px; padding-top: 10px; }
-  .nav { order: 3; flex-basis: 100%; margin: 0 -12px; }
-  .nav__item { min-height: 46px; }
   .usuario-topo { margin-left: auto; }
   .filtros { grid-template-columns: 1fr 1fr; }
   .filtros .busca { grid-column: 1 / -1; }
@@ -1119,3 +1116,100 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 .exportar__opcao small { font-size: 12.5px; font-weight: 400; color: var(--texto-2); }
 .exportar__nota { font-size: 12.5px; color: var(--texto-3); }
 .exportar__titulo { margin: 34px 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
+
+/* ==========================================================================
+   Celular
+   ========================================================================== */
+.menu-celular, .nav__usuario, .rotulo-curto, .ficha__folha-num { display: none; }
+
+/* --- Menu de tres barrinhas ------------------------------------------------ */
+@media (max-width: 960px) {
+  .topo__interno { gap: 14px; min-height: 60px; padding: 0 16px; }
+  .marca img { height: 30px; }
+  .menu-celular {
+    display: inline-flex; flex-direction: column; justify-content: center; gap: 5px;
+    width: 40px; height: 40px; padding: 0 9px; flex: none;
+    border: 1px solid rgba(255, 255, 255, .35); border-radius: var(--raio-sm);
+    background: transparent; cursor: pointer;
+  }
+  .menu-celular span { display: block; height: 2px; border-radius: 2px; background: #fff; transition: transform .2s ease, opacity .2s ease; }
+  .topo--aberto .menu-celular { background: rgba(255, 255, 255, .12); }
+  .topo--aberto .menu-celular span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .topo--aberto .menu-celular span:nth-child(2) { opacity: 0; }
+  .topo--aberto .menu-celular span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .nav {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 0; padding: 6px 0 12px; overflow: visible;
+    background: var(--cobalto); border-top: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: 0 16px 28px -12px rgba(0, 0, 40, .55);
+  }
+  .topo--aberto .nav { display: flex; }
+  .nav__item { min-height: 50px; padding: 0 22px; font-size: 13px; }
+  .nav__item--ativo { background: rgba(255, 255, 255, .08); }
+  .nav__item--ativo::after { left: 0; right: auto; top: 10px; bottom: 10px; width: 4px; height: auto; }
+  .nav__usuario { display: grid; gap: 3px; margin-top: 8px; padding: 14px 22px 4px; border-top: 1px solid rgba(255, 255, 255, .14); }
+  .nav__usuario strong { font-size: 14px; font-weight: 600; }
+  .nav__usuario span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255, 255, 255, .62); }
+}
+
+@media (max-width: 720px) {
+  /* --- Botoes da ficha: uma linha so, discretos --------------------------- */
+  .barra-acoes { flex-wrap: nowrap; gap: 10px; margin-bottom: 20px; }
+  .barra-acoes__botoes { flex-wrap: nowrap; gap: 6px; }
+  .barra-acoes .botao { height: 34px; padding: 0 12px; gap: 6px; font-size: 10.5px; letter-spacing: .08em; }
+  .barra-acoes .botao--so-icone-celular { width: 34px; padding: 0; }
+  .barra-acoes .botao--fantasma { border-color: var(--linha); background: var(--papel); }
+  .rotulo-longo { display: none; }
+  .rotulo-curto { display: inline; }
+  .link-voltar { font-size: 11px; white-space: nowrap; }
+
+  /* --- Ficha em folhas separadas ----------------------------------------- */
+  .ficha--folhas { padding: 0; background: none; border: 0; box-shadow: none; }
+  .ficha--folhas::before, .ficha--folhas::after { display: none; }
+  .ficha--folhas .ficha__etiqueta { z-index: 3; }
+  .ficha__folha {
+    position: relative;
+    padding: 26px 16px 36px 46px;
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra-ficha);
+  }
+  .ficha__folha + .ficha__folha { margin-top: 22px; }
+  .ficha__folha::before {
+    content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 22px;
+    background-image: radial-gradient(circle at 11px 11px, var(--fundo) 0 6.5px, var(--linha-forte) 7px 8px, transparent 8.5px);
+    background-size: 22px 110px; background-repeat: repeat-y; background-position: 0 40px;
+  }
+  .ficha__folha::after {
+    content: ""; position: absolute; left: 36px; top: 0; bottom: 0;
+    border-left: 1px solid rgba(115, 71, 255, .28); box-shadow: 3px 0 0 rgba(115, 71, 255, .12);
+  }
+  .ficha__folha--vazia { display: none; }
+  .ficha__folha .secao { margin-top: 40px; }
+  .ficha__folha:first-child .secao, .ficha__etiqueta + .ficha__folha .secao { margin-top: 46px; }
+  .ficha__folha-num {
+    display: block; position: absolute; right: 16px; bottom: 11px;
+    font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--texto-3);
+  }
+  .ficha--folhas .ficha__rodape { margin-top: 16px; padding: 0 4px; border-top: 0; }
+
+  /* --- Tela de entrada mais compacta ---------------------------------------- */
+  .login { padding: 22px 16px 40px; gap: 24px; align-content: start; min-height: 100svh; }
+  .login__marca { gap: 18px; }
+  .login__logo { width: 118px; }
+  .login__sobretitulo { font-size: 11px; letter-spacing: .28em; }
+  .login__titulo { margin-top: 6px; font-size: 40px; }
+  .login__texto { margin-top: 10px; font-size: 14px; line-height: 1.5; }
+  .login__pilha::before { transform: rotate(-2.4deg) translate(-6px, 6px); }
+  .login__pilha::after { transform: rotate(1.4deg) translate(5px, 4px); }
+  .ficha--login { padding: 46px 18px 24px 46px; }
+  .ficha--login .ficha__etiqueta { right: 14px; min-width: 0; padding: 8px 14px; }
+  .ficha--login .ficha__etiqueta strong { font-size: 14px; letter-spacing: .12em; }
+  .ficha--login .sobretitulo { margin-top: 12px; font-size: 10px; }
+  .ficha--login__titulo { font-size: 22px; }
+  .ficha--login .apoio { font-size: 13.5px; }
+  .ficha--login .recado { margin-top: 14px; padding: 10px 12px; font-size: 13px; }
+  .botao-microsoft { height: 46px; margin-top: 20px; gap: 10px; font-size: 11.5px; letter-spacing: .05em; }
+  .cadeado { margin-top: 18px; }
+}

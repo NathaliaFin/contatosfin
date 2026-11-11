@@ -262,7 +262,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .recado--erro { border-color: var(--erro); background: var(--erro-050); }
 .recado--aviso { border-color: #C98A00; background: var(--aviso-050); }
 .recado--info { border-color: var(--klein); background: var(--klein-050); }
-.recado--pendente { border-color: var(--violeta); background: #F4EDFF; }
+.recado--pendente { border-color: var(--erro); background: var(--erro-050); }
 
 /* --- Formularios gerais ---------------------------------------------------- */
 .campo-caixa, .selecao {
@@ -399,11 +399,11 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
   right: 10px;
   z-index: 2;
   padding: 3px 8px;
-  border: 2px solid var(--violeta);
+  border: 2px solid var(--erro);
   border-radius: 3px;
-  color: var(--violeta);
+  color: var(--erro);
   background: rgba(255, 255, 255, .9);
-  box-shadow: inset 0 0 0 1px rgba(138, 55, 255, .25);
+  box-shadow: inset 0 0 0 1px rgba(179, 38, 30, .25);
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: .16em;

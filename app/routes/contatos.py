@@ -36,9 +36,11 @@ def _contato_ou_404(contato_id: int) -> Contato:
 
 
 def _grupos_do_formulario(selecionados=()):
-    """Grupos ativos + inativos que ja estejam marcados na ficha."""
+    """Grupos ativos + inativos que ja estejam marcados na ficha, em ordem
+    alfabetica (sem diferenca de acentos e maiusculas) para achar rapido."""
     grupos = Grupo.ordenados(apenas_ativos=False)
-    return [g for g in grupos if g.ativo or g.id in set(selecionados or [])]
+    marcados = set(selecionados or [])
+    return sorted((g for g in grupos if g.ativo or g.id in marcados), key=lambda g: (normalizar(g.nome), g.id))
 
 
 def _render_form(modo, valores, contato=None, erros=None, comentario="", status=200, repetidas=None):

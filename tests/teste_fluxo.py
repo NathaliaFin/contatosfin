@@ -365,5 +365,14 @@ novo.post("/auth/login", data={"email": "usuario@fin.org.br", "senha": "Fin@2026
 ok(novo.get(f"/listas/{lid}/participantes").status_code == 403, "usuario NAO monta lista")
 ok("Adicionar ou tirar" not in novo.get(f"/listas/{lid}").get_data(as_text=True), "usuario nao ve o botao")
 
+print("\n[17] Listas em ordem alfabetica no formulario")
+import re as _re
+novo.post("/auth/sair")
+novo.post("/auth/login", data={"email": "gestor@fin.org.br", "senha": "Fin@2026"})
+h = novo.get("/contatos/novo").get_data(as_text=True)
+nomes = _re.findall(r'name="grupos" value="\d+" ?(?:checked)?><span>([^<]+)</span>', h)
+from app.services.texto import normalizar as _n
+ok(len(nomes) > 2 and nomes == sorted(nomes, key=_n), f"listas em ordem alfabetica: {nomes}")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

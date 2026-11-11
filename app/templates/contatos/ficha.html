@@ -44,18 +44,17 @@
 
   {% set secoes = [('dados', ['email', 'celular', 'telefone_comercial', 'endereco_comercial']), ('secretaria', None), ('observacoes', None)] %}
   {% if mostrar_restritos %}{% set secoes = secoes + [('restritos', None)] %}{% endif %}
-  {#- No celular a ficha se divide em folhas: a primeira (identificacao e dados
-      do contato) sempre existe; as demais so aparecem se tiverem algo
-      preenchido. No computador continua uma folha so, com tudo. -#}
+  {#- No celular a ficha se divide em folhas: identificacao (foto e nome) e
+      dados do contato sempre existem; secretaria, observacoes e restritos so
+      aparecem se tiverem algo preenchido. No computador continua uma folha so. -#}
   {% set ns = namespace(cheias=['dados']) %}
   {% for chave, apenas in secoes if chave != 'dados' %}
     {% set f = namespace(tem=false) %}
     {% for campo in c.campos_da_secao(chave) %}{% if contato[campo.chave] %}{% set f.tem = true %}{% endif %}{% endfor %}
     {% if f.tem %}{% set ns.cheias = ns.cheias + [chave] %}{% endif %}
   {% endfor %}
-  {% for chave, apenas in secoes %}
-  <div class="ficha__folha{% if chave not in ns.cheias %} ficha__folha--vazia{% endif %}">
-    {% if loop.first %}
+  {% set total_folhas = ns.cheias|length + 1 %}
+  <div class="ficha__folha ficha__folha--identificacao">
     <header class="ficha__topo">
       <div class="ficha__identificacao">
         <p class="sobretitulo">Ficha de contato</p>
@@ -88,7 +87,10 @@
       </div>
       {% if pendente %}<span class="carimbo carimbo--grande">Alteração pendente</span>{% endif %}
     </header>
-    {% endif %}
+    <span class="ficha__folha-num">Folha 1 de {{ total_folhas }}</span>
+  </div>
+  {% for chave, apenas in secoes %}
+  <div class="ficha__folha{% if chave not in ns.cheias %} ficha__folha--vazia{% endif %}">
     <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">
       <h2 class="secao__aba"><em>{{ '%02d' % loop.index }}</em> {{ c.SECOES[chave] }}{% if chave == 'restritos' %} {{ icone('cadeado', 'icone--p') }}{% endif %}</h2>
       {% if chave == 'restritos' %}
@@ -103,7 +105,7 @@
         {% endfor %}
       </div>
     </section>
-    {% if chave in ns.cheias %}<span class="ficha__folha-num">Folha {{ ns.cheias.index(chave) + 1 }} de {{ ns.cheias|length }}</span>{% endif %}
+    {% if chave in ns.cheias %}<span class="ficha__folha-num">Folha {{ ns.cheias.index(chave) + 2 }} de {{ total_folhas }}</span>{% endif %}
   </div>
   {% endfor %}
 

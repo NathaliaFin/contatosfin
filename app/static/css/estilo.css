@@ -1187,7 +1187,15 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   }
   .ficha__folha--vazia { display: none; }
   .ficha__folha .secao { margin-top: 40px; }
-  .ficha__folha:first-child .secao, .ficha__etiqueta + .ficha__folha .secao { margin-top: 46px; }
+  /* Folha 1: foto menor, ao lado do botao do WhatsApp, e o nome logo abaixo */
+  .ficha__folha--identificacao .ficha__topo { gap: 14px; padding: 0; border-bottom: 0; }
+  .ficha__folha--identificacao .ficha__foto { margin-top: 18px; gap: 16px; }
+  .ficha__folha--identificacao .ficha__identificacao { padding-top: 4px; }
+  .ficha__folha--identificacao .retrato--grande { width: 104px; height: 138px; padding: 4px; }
+  .ficha__folha--identificacao .retrato--grande::before { top: -8px; width: 54px; height: 15px; }
+  .ficha__folha--identificacao .retrato--grande .retrato__iniciais { font-size: 32px; }
+  .ficha__folha--identificacao .whats-foto { order: 0; margin-bottom: 6px; }
+  .ficha__folha--identificacao .carimbo--grande { top: 34px; right: 0; }
   .ficha__folha-num {
     display: block; position: absolute; right: 16px; bottom: 11px;
     font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--texto-3);

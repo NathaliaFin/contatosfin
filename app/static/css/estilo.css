@@ -1088,15 +1088,16 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 .botao-whats:hover, .menu[open] > .botao-whats { background: var(--whats-escuro); transform: scale(1.06); text-decoration: none; }
 .botao-whats:focus-visible { outline: 3px solid rgba(37, 211, 102, .45); outline-offset: 2px; }
 .botao-whats .icone { width: 19px; height: 19px; }
-.botao-whats--grande { width: 46px; height: 46px; border: 3px solid var(--papel); }
-.botao-whats--grande .icone { width: 24px; height: 24px; }
+.botao-whats--grande { width: 40px; height: 40px; }
+.botao-whats--grande .icone { width: 22px; height: 22px; }
 
-/* No cartao: canto inferior direito, acima do link que cobre o cartao */
-.cartao__whats { position: absolute; right: 14px; bottom: 12px; z-index: 3; }
-.cartao__rodape { padding-right: 60px; }
+/* No cartao: acima da linha tracejada, alinhado a direita, acima do link que cobre o cartao */
+.cartao__corpo { flex: 1 0 auto; }
+.cartao__texto { display: flex; flex-direction: column; min-width: 0; }
+.cartao__whats { position: relative; z-index: 3; margin-top: auto; align-self: flex-end; }
 
-/* Na ficha: "selo" encostado no canto da foto */
+/* Na ficha: logo abaixo da foto, alinhado a direita com ela */
 .ficha__foto { position: relative; }
-.whats-foto { position: absolute; left: -18px; bottom: -14px; z-index: 4; }
+.whats-foto { align-self: flex-end; margin-right: 4px; z-index: 4; }
 .botao--whats { background: var(--whats-escuro); border-color: var(--whats-escuro); color: #fff; }
 .botao--whats:hover { background: #178A43; border-color: #178A43; color: #fff; }

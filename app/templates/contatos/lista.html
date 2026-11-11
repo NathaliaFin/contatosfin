@@ -69,10 +69,11 @@
     {% if ct.id in pendentes %}<span class="carimbo">Alteração pendente</span>{% endif %}
     <div class="cartao__corpo">
       {{ retrato(ct, 'mini') }}
-      <div>
+      <div class="cartao__texto">
         <h2 class="cartao__nome"><a class="cartao__link" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">{{ ct.nome_exibicao }}</a></h2>
         {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
         {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
+        <a class="botao-whats cartao__whats" href="{{ links_whats[ct.id] }}" target="_blank" rel="noopener" title="Compartilhar no WhatsApp" aria-label="Compartilhar {{ ct.nome_exibicao }} no WhatsApp">{{ icone('whatsapp') }}</a>
       </div>
     </div>
     {% if ct.email or ct.celular or ct.telefone_comercial or ct.grupos %}
@@ -82,7 +83,6 @@
       {{ selos(ct.grupos) }}
     </div>
     {% endif %}
-    <a class="botao-whats cartao__whats" href="{{ links_whats[ct.id] }}" target="_blank" rel="noopener" title="Compartilhar no WhatsApp" aria-label="Compartilhar {{ ct.nome_exibicao }} no WhatsApp">{{ icone('whatsapp') }}</a>
   </article>
   {% endfor %}
 </div>

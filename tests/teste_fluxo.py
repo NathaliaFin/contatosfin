@@ -228,5 +228,16 @@ with app.app_context():
     ok(linhas.get("Helena Duarte Vasconcelos", {}).get("Estado civil") == "casada", "restritos decifrados quando pedidos")
     ok(Historico.query.filter_by(acao=c.ACAO_EXPORTACAO).count() == registros + 2, "cada exportacao fica no historico")
 
+# Fora do app_context do resto do teste: la dentro o usuario da requisicao
+# anterior fica guardado em g e a entrada nem chega a acontecer.
+print("\n[12] Sair de verdade com 'manter conectado' (como na entrada pela Microsoft)")
+novo = app.test_client()
+novo.post("/auth/login", data={"email": "gestor@fin.org.br", "senha": "Fin@2026", "lembrar": "1"})
+ok(novo.get_cookie("remember_token") is not None, "entrada cria o cookie de manter conectado")
+novo.post("/auth/sair")
+r = novo.get("/contatos")
+ok(r.status_code == 302 and "/auth/login" in r.headers["Location"], "depois de sair, volta para a tela de login")
+ok(novo.get_cookie("remember_token") is None, "cookie de manter conectado apagado")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

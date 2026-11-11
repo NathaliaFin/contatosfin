@@ -949,6 +949,12 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   margin: 0;
   padding: 64px 56px 44px 104px;
   box-shadow: 0 30px 60px -24px rgba(0, 0, 40, .65);
+  /* A folha mantem o tamanho "grandinho" mesmo com o cadeado fechado;
+     o conteudo fica centralizado na altura. */
+  min-height: min(640px, calc(100vh - 140px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 /* furos mostram o azul do fundo, como num papel furado de verdade */
 .ficha--login::before { background-image: radial-gradient(circle at 13px 13px, #000088 0 8.5px, var(--linha-forte) 9px 10px, transparent 10.5px); }
@@ -1045,7 +1051,7 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 
 /* Login no celular (depois das regras gerais da ficha, para prevalecer) */
 @media (max-width: 720px) {
-  .ficha--login { padding: 52px 20px 28px 50px; }
+  .ficha--login { padding: 52px 20px 28px 50px; min-height: 0; }
   .ficha--login::before { background-image: radial-gradient(circle at 11px 11px, #000088 0 6.5px, var(--linha-forte) 7px 8px, transparent 8.5px); }
 }
 

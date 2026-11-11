@@ -59,8 +59,11 @@ def login():
 @bp.route("/sair", methods=["POST"])
 @login_required
 def sair():
-    logout_user()
+    # Primeiro limpa a sessao e so depois chama o logout_user: e ele que marca
+    # o cookie "manter conectado" para ser apagado. Na ordem inversa a marca
+    # sumia junto com a sessao, o cookie ficava e a pessoa voltava logada.
     session.clear()
+    logout_user()
     flash("Sessão encerrada.", "info")
     return redirect(url_for("auth.login"))
 

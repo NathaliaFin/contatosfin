@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0000A0">
+<title>Sem conexão · Contatos Fin</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; padding: 24px; box-sizing: border-box;
+    background: linear-gradient(160deg, #0000A0 0%, #00008A 55%, #000070 100%);
+    color: #fff; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; text-align: center;
+  }
+  .icone { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 14px 30px -10px rgba(0, 0, 40, .7); }
+  h1 { margin: 26px 0 8px; font-size: 24px; }
+  p { margin: 0 auto; max-width: 300px; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, .8); }
+  button {
+    margin-top: 26px; height: 46px; padding: 0 26px; border: 0; border-radius: 6px;
+    background: #fff; color: #0000A0; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <main>
+    <svg class="icone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0028E6"/><stop offset="1" stop-color="#0000A0"/></linearGradient>
+    <clipPath id="tela"><rect width="512" height="512"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="url(#fundo)"/>
+  <g transform="translate(256 256) scale(1.14) translate(-256 -270)">
+  <g clip-path="url(#tela)" transform="rotate(-12 0 512)">
+    <rect x="-60" y="392" width="460" height="22" fill="#00D1FF"/>
+    <rect x="-60" y="424" width="460" height="22" fill="#0080FF"/>
+    <rect x="-60" y="456" width="460" height="22" fill="#5C47FF"/>
+    <rect x="-60" y="488" width="460" height="22" fill="#A637FF"/>
+  </g>
+  <rect x="118" y="128" width="262" height="292" rx="18" fill="#C9D2FF" transform="rotate(-7 249 274)"/>
+  <g transform="rotate(3 262 268)">
+    <rect x="312" y="100" width="70" height="44" rx="9" fill="#00D1FF"/>
+    <rect x="132" y="118" width="262" height="300" rx="20" fill="#fff"/>
+    <circle cx="160" cy="182" r="11" fill="#0028E6"/>
+    <circle cx="160" cy="268" r="11" fill="#0028E6"/>
+    <circle cx="160" cy="354" r="11" fill="#0028E6"/>
+    <line x1="186" y1="118" x2="186" y2="418" stroke="#5C47FF" stroke-opacity=".35" stroke-width="3"/>
+    <circle cx="282" cy="200" r="40" fill="#0028E6"/>
+    <path d="M212 300 a70 58 0 0 1 140 0 v6 h-140 Z" fill="#0028E6"/>
+    <rect x="212" y="328" width="146" height="14" rx="7" fill="#12143D"/>
+    <rect x="212" y="356" width="108" height="11" rx="5.5" fill="#A2A6AB"/>
+  </g>
+  </g>
+</svg>
+    <h1>Sem conexão</h1>
+    <p>O Contatos Fin precisa de internet para mostrar as fichas. Verifique a conexão e tente de novo.</p>
+    <button type="button" onclick="location.reload()">Tentar de novo</button>
+  </main>
+</body>
+</html>

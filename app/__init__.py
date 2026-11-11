@@ -57,9 +57,9 @@ def _registrar_login_manager() -> None:
 
 
 def _registrar_blueprints(app: Flask) -> None:
-    from app.routes import admin, auth, contatos, empresas, relatorios, solicitacoes
+    from app.routes import admin, auth, contatos, empresas, pwa, relatorios, solicitacoes
 
-    for modulo in (auth, contatos, empresas, solicitacoes, relatorios, admin):
+    for modulo in (auth, contatos, empresas, solicitacoes, relatorios, admin, pwa):
         app.register_blueprint(modulo.bp)
 
 

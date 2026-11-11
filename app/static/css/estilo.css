@@ -1213,3 +1213,15 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .botao-microsoft { height: 46px; margin-top: 20px; gap: 10px; font-size: 11.5px; letter-spacing: .05em; }
   .cadeado { margin-top: 18px; }
 }
+
+/* --- Aplicativo instalado no iPhone ---------------------------------------
+   A barra de status fica por cima da pagina (black-translucent): o topo azul
+   e a tela de entrada descem o tamanho dela. Fora do app, o valor e 0. */
+.topo { padding-top: env(safe-area-inset-top, 0px); }
+.login { padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
+@media (max-width: 980px) {
+  .login { padding-top: calc(32px + env(safe-area-inset-top, 0px)); }
+}
+@media (max-width: 720px) {
+  .login { padding-top: calc(26px + env(safe-area-inset-top, 0px)); }
+}

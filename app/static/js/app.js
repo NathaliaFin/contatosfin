@@ -255,3 +255,10 @@
     if (e.key === "Escape") alternar(false);
   });
 })();
+
+/* Aplicativo instalavel: o service worker so mostra a pagina "sem conexao". */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function () {});
+  });
+}

@@ -39,6 +39,8 @@
     </div>
   </header>
 
+  {% if repetidas %}{% include "_repetidas.html" %}{% endif %}
+
   {% set secoes = ['dados', 'secretaria', 'grupos', 'observacoes'] + (['restritos'] if incluir_restritos else []) %}
   {% for chave in secoes %}
   <section class="secao{% if loop.index is even %} secao--direita secao--cobalto{% endif %}{% if chave == 'restritos' %} secao--restrita{% endif %}">

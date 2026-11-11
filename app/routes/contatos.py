@@ -9,6 +9,7 @@ from app.extensions import db
 from app.models import Contato, Empresa, Grupo, Historico, Solicitacao, agora
 from app.services import compartilhar
 from app.services import contatos as servico
+from app.services import duplicidade
 from app.services import email as servico_email
 from app.services import fotos
 from app.services.permissoes import gestao_requerida
@@ -39,7 +40,8 @@ def _grupos_do_formulario(selecionados=()):
     return [g for g in grupos if g.ativo or g.id in set(selecionados or [])]
 
 
-def _render_form(modo, valores, contato=None, erros=None, comentario="", status=200):
+def _render_form(modo, valores, contato=None, erros=None, comentario="", status=200, repetidas=None):
+    arquivo = request.files.get("foto") if request.method == "POST" else None
     return (
         render_template(
             "contatos/form.html",
@@ -50,9 +52,30 @@ def _render_form(modo, valores, contato=None, erros=None, comentario="", status=
             comentario=comentario,
             grupos=_grupos_do_formulario(valores.get("grupos")),
             incluir_restritos=current_user.pode_gerir,
+            repetidas=repetidas or [],
+            trava_repetida=duplicidade.trava(repetidas or []),
+            foto_enviada=bool(arquivo and arquivo.filename),
         ),
         status,
     )
+
+
+def _barrar_repetida(modo, valores, contato=None, anteriores=None, comentario=""):
+    """Confere se a ficha ja existe. Devolve o formulario de volta, com o
+    aviso, ou None para seguir gravando.
+
+    E-mail repetido trava sempre. Nome ou celular repetido so passa depois
+    que a pessoa confirma que e outra pessoa (botao do aviso).
+    """
+    repetidas = duplicidade.procurar(valores, ignorar_contato=contato, anteriores=anteriores)
+    if not repetidas:
+        return None
+    if duplicidade.trava(repetidas):
+        erros = {"email": duplicidade.erro_email(repetidas)}
+        return _render_form(modo, valores, contato, erros, comentario, 409, repetidas)
+    if request.form.get("confirmar_repetido"):
+        return None
+    return _render_form(modo, valores, contato, None, comentario, 409, repetidas)
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +250,9 @@ def novo():
     valores, erros = servico.ler_formulario(request.form, incluir_restritos=True)
     if erros:
         return _render_form("novo", valores, erros=erros, status=400)
+    barrada = _barrar_repetida("novo", valores)
+    if barrada:
+        return barrada
     try:
         nome_foto = fotos.salvar_upload(request.files.get("foto"))
     except fotos.ErroFoto as erro:
@@ -248,6 +274,9 @@ def editar(contato_id):
     valores, erros = servico.ler_formulario(request.form, incluir_restritos=True)
     if erros:
         return _render_form("editar", valores, contato, erros, status=400)
+    barrada = _barrar_repetida("editar", valores, contato, servico.valores_do_contato(contato, True))
+    if barrada:
+        return barrada
     try:
         nome_foto = fotos.salvar_upload(request.files.get("foto"))
     except fotos.ErroFoto as erro:
@@ -301,6 +330,9 @@ def solicitar_alteracao(contato_id):
     valores, erros = servico.ler_formulario(request.form, incluir_restritos=False)
     if erros:
         return _render_form("solicitar", valores, contato, erros, comentario, 400)
+    barrada = _barrar_repetida("solicitar", valores, contato, servico.valores_do_contato(contato, False), comentario)
+    if barrada:
+        return barrada
     try:
         nome_foto = fotos.salvar_upload(request.files.get("foto"))
     except fotos.ErroFoto as erro:
@@ -342,6 +374,9 @@ def solicitar_inclusao():
     valores, erros = servico.ler_formulario(request.form, incluir_restritos=False)
     if erros:
         return _render_form("incluir", valores, erros=erros, comentario=comentario, status=400)
+    barrada = _barrar_repetida("incluir", valores, comentario=comentario)
+    if barrada:
+        return barrada
     try:
         nome_foto = fotos.salvar_upload(request.files.get("foto"))
     except fotos.ErroFoto as erro:

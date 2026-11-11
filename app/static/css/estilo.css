@@ -1264,3 +1264,17 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 a.selo:hover { text-decoration: none; filter: brightness(.95); }
 .barra-acoes--larga { max-width: none; margin-bottom: 14px; }
 .fichario--lista { margin-top: 48px; }
+
+/* --- Aviso de ficha repetida ---------------------------------------------- */
+.repetidas { margin: 28px 0 32px; box-shadow: none; }
+.repetidas > div { flex: 1; min-width: 0; }
+.repetidas strong { display: block; font-size: 15px; }
+.repetidas p { margin: 4px 0 0; }
+.repetidas__lista { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.repetidas__lista li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 8px 12px; background: var(--papel); border: 1px solid var(--linha); border-radius: var(--raio-sm); }
+.repetidas__lista a, .repetidas__lista b { font-weight: 700; color: var(--cobalto); }
+.repetidas__lista span { color: var(--texto-2); font-size: 13px; }
+.repetidas__lista em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8A6100; }
+.repetidas__lista em.repetidas__motivo--trava { color: var(--erro); }
+.repetidas .botao { margin-top: 14px; }
+.repetidas .campo__ajuda { margin-top: 8px; }

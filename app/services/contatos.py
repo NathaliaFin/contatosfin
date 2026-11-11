@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from app import constants as c
 from app.extensions import db
 from app.models import Contato, Empresa, Grupo, Historico, Solicitacao, agora
-from app.services import fotos
+from app.services import duplicidade, fotos
 from app.services import validacao as v
 from app.services.texto import letra_indice, limpar, normalizar
 
@@ -354,9 +354,29 @@ def _decidir(solicitacao, status, gestor, motivo):
     solicitacao.motivo_decisao = limpar(motivo)
 
 
+def repetidas_do_pedido(solicitacao) -> list:
+    """Fichas (ou outros pedidos) parecidas com o que o pedido quer gravar."""
+    if not solicitacao.pendente or solicitacao.tipo == c.TIPO_EXCLUSAO:
+        return []
+    contato = solicitacao.contato if solicitacao.tipo == c.TIPO_ALTERACAO else None
+    anteriores = valores_do_contato(contato, incluir_restritos=False) if contato is not None else None
+    return duplicidade.procurar(
+        solicitacao.dados or {}, ignorar_contato=contato,
+        ignorar_solicitacao=solicitacao, anteriores=anteriores,
+    )
+
+
 def aprovar(solicitacao, gestor, motivo=None) -> None:
     if not solicitacao.pendente:
         raise ErroSolicitacao("Esta solicitação já foi decidida.")
+
+    travas = [r for r in repetidas_do_pedido(solicitacao) if r.trava and r.contato is not None]
+    if travas:
+        raise ErroSolicitacao(
+            "Não dá para aprovar: o e-mail proposto já está na ficha de "
+            + ", ".join(duplicidade.descrever(r) for r in travas)
+            + ". Recuse o pedido ou atualize a ficha que já existe."
+        )
 
     if solicitacao.tipo == c.TIPO_INCLUSAO:
         novo = criar_contato(

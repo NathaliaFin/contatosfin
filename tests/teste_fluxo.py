@@ -266,5 +266,77 @@ ok("E-mail" not in h_nomes.split("<main")[1], "modo so nomes nao traz dados de c
 ok("casada" not in novo.get(f"/listas/{conselho.id}/imprimir?modo=dados").get_data(as_text=True), "impressao nunca traz dados restritos")
 ok(novo.get("/listas/99999").status_code == 404, "lista inexistente da 404")
 
+print("\n[15] Trava de fichas repetidas")
+with app.app_context():
+    hel = Contato.query.filter_by(nome="Helena Duarte Vasconcelos").first()
+    hel_id, hel_email, hel_cel = hel.id, hel.email, hel.celular
+    outro = Contato.ativos().filter(Contato.id != hel.id, Contato.email.isnot(None)).first()
+    outro_id = outro.id
+    excluida = Contato.query.filter(Contato.excluido_em.isnot(None), Contato.email.isnot(None)).first()
+    excluida_email = excluida.email if excluida else None
+    total = lambda: Contato.ativos().count()
+    antes = total()
+
+novo.post("/auth/sair")
+novo.post("/auth/login", data={"email": "gestor@fin.org.br", "senha": "Fin@2026"})
+r = novo.post("/contatos/novo", data={"nome": "Outra Pessoa", "email": hel_email.upper()})
+h = r.get_data(as_text=True)
+ok(r.status_code == 409 and "Já existe uma ficha com este e-mail" in h and "Helena Duarte" in h, "e-mail repetido (maiusculas) TRAVA a nova ficha")
+ok("salvar mesmo assim" not in h, "trava de e-mail nao oferece 'salvar mesmo assim'")
+r = novo.post("/contatos/novo", data={"nome": "Outra Pessoa", "email": hel_email, "confirmar_repetido": "1"})
+ok(r.status_code == 409, "confirmar NAO fura a trava de e-mail")
+
+r = novo.post("/contatos/novo", data={"nome": "helena duarte VASCONCELOS", "email": "homonima@exemplo.com.br"})
+h = r.get_data(as_text=True)
+ok(r.status_code == 409 and "Pode ser a mesma pessoa" in h and "mesmo nome" in h, "nome igual (sem diferenca de maiusculas) so AVISA")
+with app.app_context():
+    ok(total() == antes, "aviso nao grava nada")
+r = novo.post("/contatos/novo", data={"nome": "helena duarte VASCONCELOS", "email": "homonima@exemplo.com.br", "confirmar_repetido": "1"})
+ok(r.status_code == 302, "'e outra pessoa' grava a homonima")
+with app.app_context():
+    homonima = Contato.query.filter_by(email="homonima@exemplo.com.br").first()
+    homonima_id = homonima.id
+r = novo.post(f"/contatos/{homonima_id}/editar", data={"nome": "helena duarte VASCONCELOS", "email": "homonima@exemplo.com.br", "cargo": "Diretora"})
+ok(r.status_code == 302, "editar a homonima sem mexer no nome nao avisa de novo")
+
+digitos = re.sub(r"\D", "", hel_cel or "")
+r = novo.post("/contatos/novo", data={"nome": "Pessoa do Celular", "celular": digitos})
+ok(r.status_code == 409 and "mesmo celular" in r.get_data(as_text=True), "celular igual (outro formato) avisa")
+
+r = novo.post(f"/contatos/{outro_id}/editar", data={"nome": "Nome Qualquer Teste", "email": hel_email})
+ok(r.status_code == 409 and "Já existe uma ficha com este e-mail" in r.get_data(as_text=True), "edicao com e-mail de outra ficha TRAVA")
+if excluida_email:
+    r = novo.post("/contatos/novo", data={"nome": "Reaproveita E-mail", "email": excluida_email})
+    ok(r.status_code == 302, "e-mail de ficha excluida pode ser usado de novo")
+
+novo.post("/auth/sair")
+novo.post("/auth/login", data={"email": "usuario@fin.org.br", "senha": "Fin@2026"})
+r = novo.post("/contatos/solicitar-inclusao", data={"nome": "Sugestao Repetida", "email": hel_email})
+ok(r.status_code == 409 and "peça a alteração por lá" in r.get_data(as_text=True), "pedido de inclusao com e-mail existente TRAVA")
+r = novo.post("/contatos/solicitar-inclusao", data={"nome": "Pessoa Nova Pedido", "email": "pedido.novo@exemplo.com.br"})
+ok(r.status_code == 302, "pedido de inclusao com e-mail novo passa")
+r = novo.post("/contatos/solicitar-inclusao", data={"nome": "Mesma Pessoa Pedido", "email": "pedido.novo@exemplo.com.br"})
+ok(r.status_code == 409 and "pedido de inclusão com este e-mail" in r.get_data(as_text=True), "segundo pedido com o mesmo e-mail TRAVA")
+r = novo.post(f"/contatos/{outro_id}/solicitar-alteracao", data={"nome": "Nome Qualquer", "email": hel_email})
+ok(r.status_code == 409, "pedido de alteracao para e-mail de outra ficha TRAVA")
+
+# aprovacao: o e-mail apareceu numa ficha depois do pedido
+with app.app_context():
+    from app.models import Usuario as U
+    from app.services import contatos as sv
+    pedido = Solicitacao.query.filter_by(tipo=c.TIPO_INCLUSAO, status=c.STATUS_PENDENTE).order_by(Solicitacao.id.desc()).first()
+    pedido_id = pedido.id
+    ok(pedido.dados.get("email") == "pedido.novo@exemplo.com.br", "pedido pendente encontrado")
+    sv.criar_contato({"nome": "Cadastro Paralelo", "email": "pedido.novo@exemplo.com.br"}, U.query.filter_by(email="gestor@fin.org.br").first())
+    db.session.commit()
+novo.post("/auth/sair")
+novo.post("/auth/login", data={"email": "gestor@fin.org.br", "senha": "Fin@2026"})
+h = novo.get(f"/solicitacoes/{pedido_id}").get_data(as_text=True)
+ok("Aprovação bloqueada" in h and "Cadastro Paralelo" in h, "tela do pedido mostra a trava ao gestor")
+novo.post(f"/solicitacoes/{pedido_id}/aprovar")
+with app.app_context():
+    ok(db.session.get(Solicitacao, pedido_id).status == c.STATUS_PENDENTE, "aprovacao barrada: pedido continua pendente")
+    ok(Contato.ativos().filter(Contato.email == "pedido.novo@exemplo.com.br").count() == 1, "nenhuma segunda ficha com o mesmo e-mail")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

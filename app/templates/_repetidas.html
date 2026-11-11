@@ -1,0 +1,51 @@
+{#- Aviso de ficha repetida. Usado no formulario da ficha (dentro do <form>,
+    para o botao "salvar mesmo assim") e na tela do pedido, para o gestor.
+    Espera: repetidas, trava_repetida; no formulario tambem modo e foto_enviada. -#}
+{% from "_macros.html" import icone %}
+{% set no_formulario = modo is defined %}
+{% set e_pedido_form = no_formulario and modo in ('solicitar', 'incluir') %}
+<div class="recado {{ 'recado--erro' if trava_repetida else 'recado--aviso' }} repetidas" role="alert">
+  <div>
+    {% if no_formulario %}
+      {% if trava_repetida %}
+      <strong>Já existe {% if repetidas[0].contato %}uma ficha{% else %}um pedido de inclusão{% endif %} com este e-mail</strong>
+      <p>Não pode haver duas fichas com o mesmo e-mail.
+        {% if repetidas[0].contato %}Abra a ficha que já existe e {% if current_user.pode_gerir %}atualize os dados por lá{% else %}peça a alteração por lá{% endif %}.
+        {% else %}O pedido abaixo ainda espera o gestor de dados.{% endif %}</p>
+      {% else %}
+      <strong>Pode ser a mesma pessoa</strong>
+      <p>{% if repetidas|length == 1 %}Já existe uma ficha parecida{% else %}Já existem fichas parecidas{% endif %}. Confira antes de {{ 'enviar' if e_pedido_form else 'salvar' }}: se for outra pessoa, é só confirmar.</p>
+      {% endif %}
+    {% else %}
+      {% if trava_repetida %}
+      <strong>Aprovação bloqueada: o e-mail proposto já está em outra ficha</strong>
+      <p>Recuse o pedido ou atualize a ficha que já existe.</p>
+      {% else %}
+      <strong>Confira antes de aprovar</strong>
+      <p>Há {% if repetidas|length == 1 %}uma ficha parecida{% else %}fichas parecidas{% endif %} com este pedido.</p>
+      {% endif %}
+    {% endif %}
+
+    <ul class="repetidas__lista">
+      {% for r in repetidas %}
+      <li>
+        {% if r.contato %}
+        <a href="{{ url_for('contatos.ficha', contato_id=r.contato.id) }}" target="_blank" rel="noopener">{{ r.nome }}</a>
+        <span>ficha nº {{ r.contato.numero }}{% if r.contato.empresa %} · {{ r.contato.empresa.nome }}{% endif %}</span>
+        {% else %}
+        {% if current_user.pode_gerir or r.solicitacao.solicitante_id == current_user.id %}
+        <a href="{{ url_for('solicitacoes.detalhe', solicitacao_id=r.solicitacao.id) }}" target="_blank" rel="noopener">{{ r.nome }}</a>
+        {% else %}<b>{{ r.nome }}</b>{% endif %}
+        <span>pedido de inclusão aguardando o gestor de dados</span>
+        {% endif %}
+        <em class="{{ 'repetidas__motivo--trava' if r.trava }}">{{ r.rotulo_motivos }}</em>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if no_formulario and not trava_repetida %}
+    <button class="botao botao--pequeno" type="submit" name="confirmar_repetido" value="1">{{ icone('check', 'icone--p') }} É outra pessoa: {{ 'enviar' if e_pedido_form else 'salvar' }} mesmo assim</button>
+    {% if foto_enviada %}<p class="campo__ajuda">A foto escolhida não ficou guardada: escolha de novo antes de confirmar.</p>{% endif %}
+    {% endif %}
+  </div>
+</div>

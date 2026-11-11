@@ -57,6 +57,7 @@ def detalhe(solicitacao_id):
         s=solicitacao,
         atual=servico.situacao_atual(solicitacao) if solicitacao.pendente else {},
         rotulos=c.ROTULOS,
+        repetidas=servico.repetidas_do_pedido(solicitacao) if current_user.pode_gerir else [],
     )
 
 

@@ -1,0 +1,24 @@
+{#- Cartao de contato do fichario. Usado na pagina Contatos e na pagina de
+    cada lista. Espera: ct, pendentes (ids) e links_whats ({id: link}). -#}
+{% from "_macros.html" import icone, retrato, selos %}
+<article class="cartao">
+  <span class="cartao__aba">{{ ct.letra or '#' }}</span>
+  <span class="cartao__numero">Nº {{ ct.numero }}</span>
+  {% if ct.id in pendentes %}<span class="carimbo">Alteração pendente</span>{% endif %}
+  <div class="cartao__corpo">
+    {{ retrato(ct, 'mini') }}
+    <div class="cartao__texto">
+      <h2 class="cartao__nome"><a class="cartao__link" href="{{ url_for('contatos.ficha', contato_id=ct.id) }}">{{ ct.nome_exibicao }}</a></h2>
+      {% if ct.cargo %}<p class="cartao__cargo">{{ ct.cargo }}</p>{% endif %}
+      {% if ct.empresa %}<p class="cartao__empresa">{{ ct.empresa.nome }}</p>{% endif %}
+      <a class="botao-whats cartao__whats" href="{{ links_whats[ct.id] }}" target="_blank" rel="noopener" title="Compartilhar no WhatsApp" aria-label="Compartilhar {{ ct.nome_exibicao }} no WhatsApp">{{ icone('whatsapp') }}</a>
+    </div>
+  </div>
+  {% if ct.email or ct.celular or ct.telefone_comercial or ct.grupos %}
+  <div class="cartao__rodape">
+    {% if ct.email %}<div class="cartao__linha">{{ icone('email', 'icone--p') }}<span>{{ ct.email }}</span></div>{% endif %}
+    {% if ct.celular or ct.telefone_comercial %}<div class="cartao__linha">{{ icone('celular' if ct.celular else 'telefone', 'icone--p') }}<span>{{ ct.celular or ct.telefone_comercial }}</span></div>{% endif %}
+    {{ selos(ct.grupos) }}
+  </div>
+  {% endif %}
+</article>

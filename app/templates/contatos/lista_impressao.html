@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ grupo.nome }} · Contatos Fin</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/app/icone.svg') }}" type="image/svg+xml">
+  <style>
+    @font-face {
+      font-family: "Montserrat"; font-style: normal; font-weight: 100 900; font-display: block;
+      src: url("{{ url_for('static', filename='fonts/montserrat-latin-wght-normal.woff2') }}") format("woff2-variations");
+    }
+    @page { size: A4; margin: 14mm 14mm 16mm; }
+    * { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { margin: 0; background: #E8EBF2; color: #12143D; font-family: "Montserrat", Arial, sans-serif; font-size: 10.5pt; }
+
+    /* barra so na tela */
+    .barra { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 18px; background: #0000A0; color: #fff; }
+    .barra strong { margin-right: auto; font-size: 13px; letter-spacing: .04em; }
+    .barra a, .barra button { height: 34px; padding: 0 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; font: 600 11px/32px "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+    .barra a.ativo { background: rgba(255,255,255,.16); border-color: #fff; }
+    .barra button { background: #fff; color: #0000A0; border-color: #fff; }
+
+    .papel { max-width: 210mm; margin: 24px auto 40px; padding: 14mm; background: #fff; box-shadow: 0 10px 30px rgba(0,0,60,.15); }
+
+    header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 10px; border-bottom: 3px double #0028E6; }
+    header img { height: 30px; display: block; }
+    header .titulo { text-align: right; }
+    .sobre { font-size: 7.5pt; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: #0028E6; }
+    h1 { margin: 2px 0 0; font-size: 17pt; font-weight: 700; }
+    .info { margin: 8px 0 18px; font-size: 8.5pt; color: #5A5F7A; display: flex; justify-content: space-between; }
+
+    /* so nomes */
+    ol.nomes { margin: 0; padding: 0 0 0 1.6em; column-count: 2; column-gap: 12mm; }
+    ol.nomes li { padding: 3px 0; break-inside: avoid; border-bottom: 1px dotted #C9CEDB; }
+    ol.nomes li::marker { color: #0028E6; font-weight: 700; font-size: 9pt; }
+
+    /* com dados */
+    .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 8mm; }
+    .pessoa { display: flex; gap: 10px; padding: 9px 0 0; border-top: 2px solid #0028E6; break-inside: avoid; page-break-inside: avoid; }
+    .pessoa h2 { margin: 0; font-size: 11pt; font-weight: 700; line-height: 1.25; }
+    .funcao { margin: 2px 0 6px; font-size: 9pt; color: #3B4060; }
+    .funcao b { color: #0028E6; font-weight: 600; }
+    dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; font-size: 8.8pt; }
+    dt { color: #7A7F99; font-size: 7pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding-top: 2px; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    .foto { flex: none; width: 22mm; height: 29mm; border: 1px solid #C9CEDB; padding: 2px; background: #fff; }
+    .foto img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+    .foto span { display: grid; place-items: center; width: 100%; height: 100%; background: #EEF1FF; color: #0028E6; font-size: 14pt; font-weight: 300; }
+
+    footer { margin-top: 10mm; padding-top: 6px; border-top: 1px solid #C9CEDB; font-size: 7.5pt; color: #7A7F99; text-align: center; letter-spacing: .06em; }
+    .vazio { color: #7A7F99; }
+
+    @media print {
+      body { background: #fff; }
+      .barra { display: none; }
+      .papel { margin: 0; padding: 0; max-width: none; box-shadow: none; }
+    }
+    @media (max-width: 640px) {
+      .papel { margin: 0; padding: 18px 14px; }
+      .grade { grid-template-columns: 1fr; }
+      ol.nomes { column-count: 1; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="barra" aria-label="Impressão">
+    <strong>{{ grupo.nome }}</strong>
+    {% for chave, rotulo in modos.items() %}
+    <a href="{{ url_for('contatos.lista_imprimir', grupo_id=grupo.id, modo=chave) }}" {% if chave == modo %}class="ativo" aria-current="page"{% endif %}>{{ rotulo }}</a>
+    {% endfor %}
+    <button type="button" onclick="window.print()">Imprimir ou salvar em PDF</button>
+  </nav>
+
+  <main class="papel">
+    <header>
+      <img src="{{ url_for('static', filename='img/marca/fin_dec_hor_cor_rgb_pos-recorte.png') }}" alt="Fin — Confederação Nacional das Instituições Financeiras">
+      <div class="titulo">
+        <div class="sobre">Lista de trabalho</div>
+        <h1>{{ grupo.nome }}</h1>
+      </div>
+    </header>
+    <div class="info">
+      <span>{{ contatos|length }} participante{{ '' if contatos|length == 1 else 's' }}</span>
+      <span>Gerada em {{ gerada_em|datahora }}</span>
+    </div>
+
+    {% if not contatos %}
+    <p class="vazio">Nenhuma ficha nesta lista.</p>
+    {% elif modo == 'nomes' %}
+    <ol class="nomes">
+      {% for ct in contatos %}<li>{{ ct.nome_exibicao }}</li>{% endfor %}
+    </ol>
+    {% else %}
+    <div class="grade">
+      {% for ct in contatos %}
+      <section class="pessoa">
+        {% if modo == 'fotos' %}
+        <div class="foto">
+          {% if ct.foto %}<img src="{{ url_for('contatos.foto', contato_id=ct.id, v=ct.foto[:8]) }}" alt="">{% else %}<span>{{ ct.nome|iniciais }}</span>{% endif %}
+        </div>
+        {% endif %}
+        <div>
+          <h2>{{ ct.nome_exibicao }}</h2>
+          {% if ct.cargo or ct.empresa %}<p class="funcao">{{ ct.cargo or '' }}{% if ct.cargo and ct.empresa %} · {% endif %}{% if ct.empresa %}<b>{{ ct.empresa.nome }}</b>{% endif %}</p>{% endif %}
+          <dl>
+            {% if ct.celular %}<dt>Celular</dt><dd>{{ ct.celular }}</dd>{% endif %}
+            {% if ct.telefone_comercial %}<dt>Telefone</dt><dd>{{ ct.telefone_comercial }}</dd>{% endif %}
+            {% if ct.email %}<dt>E-mail</dt><dd>{{ ct.email }}</dd>{% endif %}
+            {% if ct.endereco_comercial %}<dt>Endereço</dt><dd>{{ ct.endereco_comercial }}</dd>{% endif %}
+          </dl>
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <footer>Contatos Fin · Confederação Nacional das Instituições Financeiras</footer>
+  </main>
+
+  <script>
+    // Abre a janela de impressao sozinha quando a pagina chega pelos botoes
+    // da lista (auto=1); espera as fotos e a fonte carregarem antes.
+    if (/[?&]auto=1/.test(location.search)) window.addEventListener("load", function () {
+      var pronto = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+      pronto.then(function () { setTimeout(function () { window.print(); }, 300); });
+    });
+  </script>
+</body>
+</html>

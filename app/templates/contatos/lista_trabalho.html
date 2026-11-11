@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone %}
+{% block titulo %}{{ grupo.nome }}{% endblock %}
+{% block conteudo %}
+<div class="barra-acoes barra-acoes--larga">
+  {% if current_user.pode_gerir %}
+  <a class="link-voltar" href="{{ url_for('admin.grupos') }}">{{ icone('voltar', 'icone--p') }} Listas</a>
+  {% else %}
+  <a class="link-voltar" href="{{ url_for('contatos.lista') }}">{{ icone('voltar', 'icone--p') }} Contatos</a>
+  {% endif %}
+</div>
+
+<div class="cabecalho">
+  <div>
+    <p class="sobretitulo">Lista de trabalho{% if not grupo.ativo %} · inativa{% endif %}</p>
+    <h1>{{ grupo.nome }}</h1>
+    <p class="cabecalho__apoio">{{ contatos|length }} participante{{ '' if contatos|length == 1 else 's' }}</p>
+  </div>
+  {% if contatos %}
+  <div class="cabecalho__acoes">
+    <details class="menu">
+      <summary class="botao botao--contorno">{{ icone('imprimir', 'icone--p') }} Imprimir ou salvar em PDF</summary>
+      <div class="menu__caixa menu__caixa--impressao">
+        <p>Escolha o formato. A página de impressão abre numa nova aba; para gerar o PDF, escolha “Salvar como PDF” como impressora.</p>
+        {% for chave, rotulo in modos.items() %}
+        <a class="opcao-impressao" href="{{ url_for('contatos.lista_imprimir', grupo_id=grupo.id, modo=chave, auto=1) }}" target="_blank" rel="noopener">
+          <strong>{{ rotulo }}</strong>
+          <span>{% if chave == 'dados' %}Nome, cargo, organização, celular, telefone, e-mail e endereço{% elif chave == 'nomes' %}Lista numerada, só com os nomes{% else %}Os mesmos dados, com a foto 3×4 de cada pessoa{% endif %}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </details>
+  </div>
+  {% endif %}
+</div>
+
+{% if contatos %}
+<div class="fichario fichario--lista">
+  {% for ct in contatos %}
+  {% include "contatos/_cartao.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="vazio">
+  <h2>Lista vazia</h2>
+  <p>Nenhuma ficha está nesta lista ainda. Para incluir alguém, edite a ficha e marque a lista em “Listas de trabalho”.</p>
+</div>
+{% endif %}
+{% endblock %}

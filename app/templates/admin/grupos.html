@@ -7,7 +7,7 @@
   <div>
     <p class="sobretitulo">Cadastro</p>
     <h1>Listas de trabalho</h1>
-    <p class="cabecalho__apoio">A ordem definida aqui é a mesma das fichas e dos filtros. Lista desativada some dos formulários, mas continua nas fichas que já a têm.</p>
+    <p class="cabecalho__apoio">Clique numa lista para ver os participantes e imprimir. A ordem definida aqui é a mesma das fichas e dos filtros. Lista desativada some dos formulários, mas continua nas fichas que já a têm.</p>
   </div>
 </div>
 
@@ -36,8 +36,8 @@
           </form>
           {% endfor %}
         </td>
-        <td><span class="selo selo--{{ g.ordem % 7 }}">{{ g.nome }}</span></td>
-        <td>{% set n = contagem.get(g.id, 0) %}{% if n %}<a href="{{ url_for('contatos.lista', grupo=g.id) }}">{{ n }}</a>{% else %}<span class="apagado">0</span>{% endif %}</td>
+        <td><a class="selo selo--{{ g.ordem % 7 }}" href="{{ url_for('contatos.lista_trabalho', grupo_id=g.id) }}" title="Ver participantes">{{ g.nome }}</a></td>
+        <td>{% set n = contagem.get(g.id, 0) %}{% if n %}<a href="{{ url_for('contatos.lista_trabalho', grupo_id=g.id) }}">{{ n }}</a>{% else %}<span class="apagado">0</span>{% endif %}</td>
         <td class="contagem-pequena">{{ 'Ativa' if g.ativo else 'Inativa' }}</td>
         <td class="tabela__acoes">
           <details class="edicao-inline" style="display:inline-block;text-align:left">

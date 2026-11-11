@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 from app import constants as c
 from app.extensions import db
-from app.models import Contato, Empresa, Grupo, Historico, Solicitacao
+from app.models import Contato, Empresa, Grupo, Historico, Solicitacao, agora
 from app.services import compartilhar
 from app.services import contatos as servico
 from app.services import email as servico_email
@@ -158,6 +158,60 @@ def cartao(contato_id):
         compartilhar.vcard(contato),
         mimetype="text/vcard",
         headers={"Content-Disposition": f'attachment; filename="{nome}"', "Cache-Control": "private, no-store"},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Listas de trabalho: participantes e impressao
+# ---------------------------------------------------------------------------
+MODOS_IMPRESSAO = {
+    "dados": "Nomes e dados de contato",
+    "nomes": "Só os nomes",
+    "fotos": "Dados de contato com foto",
+}
+
+
+def _lista_ou_404(grupo_id: int) -> Grupo:
+    grupo = db.session.get(Grupo, grupo_id)
+    if grupo is None:
+        abort(404)
+    return grupo
+
+
+def _participantes(grupo: Grupo):
+    return (
+        Contato.ativos()
+        .filter(Contato.grupos.any(Grupo.id == grupo.id))
+        .order_by(Contato.busca, Contato.id)
+        .all()
+    )
+
+
+@bp.route("/listas/<int:grupo_id>")
+def lista_trabalho(grupo_id):
+    grupo = _lista_ou_404(grupo_id)
+    participantes = _participantes(grupo)
+    return render_template(
+        "contatos/lista_trabalho.html",
+        grupo=grupo,
+        contatos=participantes,
+        pendentes=servico.ids_com_pendencia(ct.id for ct in participantes),
+        links_whats={ct.id: compartilhar.link_compartilhar(ct) for ct in participantes},
+        modos=MODOS_IMPRESSAO,
+    )
+
+
+@bp.route("/listas/<int:grupo_id>/imprimir")
+def lista_imprimir(grupo_id):
+    grupo = _lista_ou_404(grupo_id)
+    modo = request.args.get("modo") if request.args.get("modo") in MODOS_IMPRESSAO else "dados"
+    return render_template(
+        "contatos/lista_impressao.html",
+        grupo=grupo,
+        contatos=_participantes(grupo),
+        modo=modo,
+        modos=MODOS_IMPRESSAO,
+        gerada_em=agora(),
     )
 
 

@@ -248,5 +248,23 @@ ok(w.status_code == 200 and "javascript" in w.mimetype and b"offline.html" in w.
 ok(novo.get("/static/offline.html").status_code == 200, "pagina sem conexao existe")
 ok(b"rel=\"manifest\"" in novo.get("/auth/login").data, "tela de entrada aponta para o manifesto")
 
+print("\n[14] Listas de trabalho: participantes e impressao")
+novo.post("/auth/login", data={"email": "usuario@fin.org.br", "senha": "Fin@2026"})
+with app.app_context():
+    from app.models import Grupo as G
+    conselho = G.query.filter_by(nome="Conselho").first()
+    membros = [x.nome for x in Contato.ativos().filter(Contato.grupos.any(G.id == conselho.id)).all()]
+r = novo.get(f"/listas/{conselho.id}")
+html = r.get_data(as_text=True)
+ok(r.status_code == 200 and all(m in html for m in membros) and len(membros) > 0, f"pagina da lista mostra os {len(membros)} participantes")
+for modo in ("dados", "nomes", "fotos"):
+    r = novo.get(f"/listas/{conselho.id}/imprimir?modo={modo}")
+    h = r.get_data(as_text=True)
+    ok(r.status_code == 200 and all(m in h for m in membros), f"impressao '{modo}' com todos os participantes")
+h_nomes = novo.get(f"/listas/{conselho.id}/imprimir?modo=nomes").get_data(as_text=True)
+ok("E-mail" not in h_nomes.split("<main")[1], "modo so nomes nao traz dados de contato")
+ok("casada" not in novo.get(f"/listas/{conselho.id}/imprimir?modo=dados").get_data(as_text=True), "impressao nunca traz dados restritos")
+ok(novo.get("/listas/99999").status_code == 404, "lista inexistente da 404")
+
 print("\n" + ("TUDO CERTO" if not falhas else f"{len(falhas)} FALHA(S):\n - " + "\n - ".join(falhas)))
 sys.exit(1 if falhas else 0)

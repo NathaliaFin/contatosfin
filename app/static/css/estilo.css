@@ -1313,3 +1313,8 @@ li[data-mudou="sai"] .escolha__item { background: var(--erro-050); }
   .escolha__resumo { flex-basis: 100%; }
   .escolha__rodape .botao { flex: 1; }
 }
+
+/* Formulario da ficha: foto, botao e especificacoes empilhados a direita
+   (a regra do WhatsApp acima deixa a foto da ficha em linha). */
+.ficha__foto.seletor-foto { flex-direction: column; align-items: center; gap: 10px; }
+.ficha__foto.seletor-foto .campo__ajuda, .ficha__foto.seletor-foto .campo__erro { margin: 0; text-align: center; max-width: 200px; }

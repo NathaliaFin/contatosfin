@@ -262,3 +262,18 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js").catch(function () {});
   });
 }
+
+/* Menus suspensos (excluir, compartilhar): tocar fora ou apertar Esc fecha. */
+(function () {
+  function fecharMenus(exceto) {
+    document.querySelectorAll("details.menu[open]").forEach(function (m) {
+      if (m !== exceto) m.removeAttribute("open");
+    });
+  }
+  document.addEventListener("click", function (e) {
+    fecharMenus(e.target.closest("details.menu"));
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") fecharMenus(null);
+  });
+})();

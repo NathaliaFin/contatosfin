@@ -1187,14 +1187,23 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   }
   .ficha__folha--vazia { display: none; }
   .ficha__folha .secao { margin-top: 40px; }
-  /* Folha 1: foto pequena a direita, embaixo do numero da ficha, com o WhatsApp ao lado */
+  /* Folha 1: foto pequena a direita, embaixo do numero da ficha */
   .ficha__folha--identificacao .ficha__topo { gap: 14px; padding: 0; border-bottom: 0; }
   .ficha__folha--identificacao .ficha__foto { justify-self: end; margin-top: 50px; margin-right: 6px; gap: 16px; }
   .ficha__folha--identificacao .ficha__identificacao { padding-top: 4px; }
   .ficha__folha--identificacao .retrato--grande { width: 84px; height: 112px; padding: 4px; }
   .ficha__folha--identificacao .retrato--grande::before { top: -7px; width: 46px; height: 13px; }
   .ficha__folha--identificacao .retrato--grande .retrato__iniciais { font-size: 26px; }
-  .ficha__folha--identificacao .whats-foto { order: -1; margin-bottom: 4px; }
+  /* WhatsApp embaixo da foto, na altura do nome; o nome deixa espaco para ele */
+  .ficha__folha--identificacao .whats-foto { position: absolute; top: calc(100% + 36px); left: calc(50% - 20px); margin: 0; }
+  /* A caixa de compartilhar abre como painel no pe da tela (nao cabe ao lado do botao) */
+  .ficha__folha--identificacao .whats-foto .menu__caixa {
+    position: fixed; top: auto; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: auto; max-height: 82vh; overflow-y: auto; z-index: 30;
+    border-radius: var(--raio); box-shadow: 0 -10px 40px rgba(0, 0, 40, .35);
+  }
+  .ficha__folha--identificacao .ficha__identificacao h1 { padding-right: 58px; }
+  .whats-alternativa { display: none; }
   .ficha__folha--identificacao .retrato__legenda { display: none; }
   .ficha__folha--identificacao .carimbo--grande { top: 34px; right: 0; }
   .ficha__folha-num {

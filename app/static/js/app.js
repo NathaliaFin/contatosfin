@@ -226,9 +226,11 @@
       });
     });
 
-    // O .vcf so e buscado quando a caixinha abre (sao varios cartoes por pagina).
+    // "Enviar cartao" (arquivo .vcf pelo compartilhar do aparelho) so no
+    // celular: no computador o Windows recusa o arquivo sem avisar, e la
+    // "Baixar cartao" ja resolve. O .vcf so e buscado quando a caixinha abre.
     caixa.addEventListener("toggle", function () {
-      if (!caixa.open || buscou || !navigator.canShare) return;
+      if (!caixa.open || buscou || !celular || !navigator.canShare) return;
       buscou = true;
       fetch(vcf.href, { credentials: "same-origin" })
         .then(function (r) { return r.ok ? r.blob() : null; })
@@ -245,7 +247,11 @@
     });
 
     enviar.addEventListener("click", function () {
-      if (arquivo) navigator.share({ files: [arquivo] }).catch(function () {});
+      if (!arquivo) return;
+      // Se o aparelho recusar o arquivo, baixa o cartao em vez de nao fazer nada.
+      navigator.share({ files: [arquivo] }).catch(function (erro) {
+        if (erro && erro.name !== "AbortError") vcf.click();
+      });
     });
   });
 })();

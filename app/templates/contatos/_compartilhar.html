@@ -9,7 +9,7 @@
 <details class="menu compartilhar {{ classe }}" data-compartilhar{% if nativo %} data-compartilhar-nativo{% endif %} data-titulo="{{ ct.nome_exibicao }}">
   <summary class="botao-compartilhar{% if grande %} botao-compartilhar--grande{% endif %}" title="Compartilhar contato" aria-label="Compartilhar {{ ct.nome_exibicao }}">{{ icone('compartilhar') }}</summary>
   <div class="menu__caixa menu__caixa--whats">
-    <p><strong>Compartilhar contato.</strong> Pelo WhatsApp, a mensagem abre pronta e você escolhe para quem enviar.</p>
+    <p><strong>Compartilhar contato</strong></p>
     <pre class="whats-previa" data-whats-texto>{{ dados.texto }}</pre>
     <a class="botao botao--whats" href="{{ dados.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
     <a class="whats-alternativa" href="{{ dados.aplicativo }}">Abrir direto no aplicativo do Windows</a>
@@ -18,7 +18,7 @@
       <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
       <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
     </div>
-    <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
+    <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Apenas dados profissionais são compartilhados.</p>
   </div>
 </details>
 {%- endmacro %}

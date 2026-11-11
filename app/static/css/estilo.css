@@ -418,7 +418,7 @@ textarea.campo-caixa { height: auto; padding: 10px 12px; resize: vertical; }
   transform: rotate(-7deg);
   pointer-events: none;
 }
-.carimbo--grande { font-size: 12px; padding: 6px 12px; border-width: 3px; top: auto; right: 210px; bottom: 30px; transform: rotate(-9deg); }
+.carimbo--grande { font-size: 12px; padding: 6px 12px; border-width: 3px; top: auto; right: 260px; bottom: 30px; transform: rotate(-9deg); }
 .carimbo--restrito { position: static; display: inline-block; transform: rotate(-3deg); border-color: var(--cobalto); color: var(--cobalto); box-shadow: none; font-size: 9px; margin-left: auto; }
 
 /* --- Selos de grupo --------------------------------------------------------- */
@@ -1096,8 +1096,8 @@ body.tela-login { background: var(--cobalto); background-image: none; }
 .cartao__texto { display: flex; flex-direction: column; min-width: 0; }
 .cartao__whats { position: relative; z-index: 3; margin-top: auto; align-self: flex-end; }
 
-/* Na ficha: logo abaixo da foto, alinhado a direita com ela */
-.ficha__foto { position: relative; }
-.whats-foto { align-self: flex-end; margin-right: 4px; z-index: 4; }
+/* Na ficha: a esquerda da foto, na mesma linha, junto da base dela */
+.ficha__foto { position: relative; flex-direction: row; align-items: flex-end; gap: 20px; }
+.whats-foto { order: -1; margin-bottom: 14px; z-index: 4; }
 .botao--whats { background: var(--whats-escuro); border-color: var(--whats-escuro); color: #fff; }
 .botao--whats:hover { background: #178A43; border-color: #178A43; color: #fff; }

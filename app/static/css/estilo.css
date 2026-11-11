@@ -1041,3 +1041,26 @@ body.tela-login { background: var(--cobalto); background-image: none; }
   .ficha--login { padding: 52px 20px 28px 50px; }
   .ficha--login::before { background-image: radial-gradient(circle at 11px 11px, #000088 0 6.5px, var(--linha-forte) 7px 8px, transparent 8.5px); }
 }
+
+/* --- Compartilhar no WhatsApp (teste) --------------------------------------- */
+.menu__caixa--whats { width: min(400px, 92vw); border-top-color: var(--klein); }
+.whats-previa {
+  margin: 0;
+  padding: 12px 14px;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: inherit;
+  color: var(--tinta);
+  background: #EEF6EF;
+  border: 1px solid #CFE3D2;
+  border-radius: 8px 8px 8px 2px;
+}
+.whats-alternativa { justify-self: center; font-size: 12px; }
+.whats-linha { display: flex; flex-wrap: wrap; gap: 8px; }
+.whats-nota { display: flex; align-items: center; gap: 6px; font-size: 11.5px !important; }
+.whats-conversa { display: inline-flex; vertical-align: middle; margin-left: 6px; color: var(--klein); }
+.whats-conversa:hover { color: var(--cobalto); }

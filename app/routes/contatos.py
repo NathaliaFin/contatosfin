@@ -1,12 +1,13 @@
 """Fichario de contatos: consulta, ficha, cadastro (gestor) e pedidos (usuario)."""
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, Response, abort, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from app import constants as c
 from app.extensions import db
 from app.models import Contato, Empresa, Grupo, Historico, Solicitacao
+from app.services import compartilhar
 from app.services import contatos as servico
 from app.services import email as servico_email
 from app.services import fotos
@@ -126,6 +127,11 @@ def ficha(contato_id):
     return render_template(
         "contatos/ficha.html",
         contato=contato,
+        whatsapp={
+            "texto": compartilhar.texto_whatsapp(contato),
+            "link": compartilhar.link_compartilhar(contato),
+            "aplicativo": compartilhar.link_aplicativo(contato),
+        },
         pendente=any(s.tipo in (c.TIPO_ALTERACAO, c.TIPO_EXCLUSAO) for s in abertas),
         solicitacoes=visiveis,
         historico=historico,
@@ -141,6 +147,17 @@ def foto(contato_id):
     resposta = send_file(fotos.caminho(contato.foto), mimetype="image/jpeg", max_age=0)
     resposta.headers["Cache-Control"] = "private, max-age=300"
     return resposta
+
+
+@bp.route("/contatos/<int:contato_id>/cartao.vcf")
+def cartao(contato_id):
+    contato = _contato_ou_404(contato_id)
+    nome = compartilhar.nome_arquivo(contato)
+    return Response(
+        compartilhar.vcard(contato),
+        mimetype="text/vcard",
+        headers={"Content-Disposition": f'attachment; filename="{nome}"', "Cache-Control": "private, no-store"},
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -37,7 +37,8 @@
 {%- elif campo.tipo == 'email' -%}
   <div class="campo__valor"><a href="mailto:{{ v }}">{{ v }}</a></div>
 {%- elif campo.tipo == 'telefone' -%}
-  <div class="campo__valor"><a href="{{ v|telefone_link }}">{{ v }}</a></div>
+  <div class="campo__valor"><a href="{{ v|telefone_link }}">{{ v }}</a>
+  {%- if campo.chave in ('celular', 'secretaria_celular') and v|whatsapp_link %} <a class="whats-conversa" href="{{ v|whatsapp_link }}" target="_blank" rel="noopener" title="Abrir conversa no WhatsApp" aria-label="Abrir conversa com {{ v }} no WhatsApp">{{ icone('whatsapp', 'icone--p') }}</a>{% endif %}</div>
 {%- else -%}
   <div class="campo__valor">{{ v }}</div>
 {%- endif -%}

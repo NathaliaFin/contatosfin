@@ -5,6 +5,21 @@
 <div class="barra-acoes">
   <a class="link-voltar" href="{{ url_for('contatos.lista') }}">{{ icone('voltar', 'icone--p') }} Contatos</a>
   <div class="barra-acoes__botoes">
+    <details class="menu" data-compartilhar>
+      <summary class="botao botao--contorno botao--pequeno">{{ icone('whatsapp', 'icone--p') }} Compartilhar</summary>
+      <div class="menu__caixa menu__caixa--whats">
+        <p>Abre o WhatsApp desta máquina com a mensagem pronta. Você escolhe para quem enviar.</p>
+        <pre class="whats-previa" data-whats-texto>{{ whatsapp.texto }}</pre>
+        <a class="botao" href="{{ whatsapp.link }}" target="_blank" rel="noopener">{{ icone('whatsapp', 'icone--p') }} Abrir no WhatsApp</a>
+        <a class="whats-alternativa" href="{{ whatsapp.aplicativo }}">Abrir direto no aplicativo do Windows</a>
+        <div class="whats-linha">
+          <a class="botao botao--contorno botao--pequeno" href="{{ url_for('contatos.cartao', contato_id=contato.id) }}" data-whats-vcf>{{ icone('download', 'icone--p') }} Baixar cartão (.vcf)</a>
+          <button class="botao botao--contorno botao--pequeno" type="button" data-whats-copiar>Copiar texto</button>
+          <button class="botao botao--contorno botao--pequeno" type="button" data-whats-enviar hidden>{{ icone('enviar', 'icone--p') }} Enviar cartão</button>
+        </div>
+        <p class="whats-nota">{{ icone('cadeado', 'icone--p') }} Só vão os dados profissionais: nada de documentos, dados confidenciais, secretária ou observações.</p>
+      </div>
+    </details>
     <button class="botao botao--fantasma botao--pequeno" type="button" onclick="window.print()">{{ icone('imprimir', 'icone--p') }} Imprimir</button>
     {% if current_user.pode_gerir %}
     <details class="menu">

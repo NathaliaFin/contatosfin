@@ -125,6 +125,12 @@ def _registrar_filtros(app: Flask) -> None:
     def filtro_iniciais(nome):
         return iniciais(nome)
 
+    @app.template_filter("whatsapp_link")
+    def whatsapp_link(valor):
+        from app.services.compartilhar import link_conversa
+
+        return link_conversa(valor)
+
     @app.template_filter("telefone_link")
     def telefone_link(valor):
         from app.services.validacao import digitos

@@ -195,3 +195,40 @@
     });
   });
 })();
+
+/* Compartilhar no WhatsApp (teste): copiar texto e, onde o aparelho deixar,
+   enviar o cartao .vcf pelo compartilhamento nativo. */
+(function () {
+  document.querySelectorAll("[data-compartilhar]").forEach(function (caixa) {
+    var texto = caixa.querySelector("[data-whats-texto]").textContent;
+    var copiar = caixa.querySelector("[data-whats-copiar]");
+    var enviar = caixa.querySelector("[data-whats-enviar]");
+    var vcf = caixa.querySelector("[data-whats-vcf]");
+
+    copiar.addEventListener("click", function () {
+      navigator.clipboard.writeText(texto).then(function () {
+        copiar.textContent = "Copiado!";
+        setTimeout(function () { copiar.textContent = "Copiar texto"; }, 1800);
+      });
+    });
+
+    if (!navigator.canShare) return;
+    var arquivo = null;
+    fetch(vcf.href, { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.blob() : null; })
+      .then(function (blob) {
+        if (!blob) return;
+        var nome = (vcf.href.split("/").pop() || "contato.vcf");
+        var candidato = new File([blob], nome, { type: "text/vcard" });
+        if (navigator.canShare({ files: [candidato] })) {
+          arquivo = candidato;
+          enviar.hidden = false;
+        }
+      })
+      .catch(function () {});
+
+    enviar.addEventListener("click", function () {
+      if (arquivo) navigator.share({ files: [arquivo] }).catch(function () {});
+    });
+  });
+})();
